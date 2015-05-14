@@ -100,8 +100,7 @@ once we have the array of paths, we can perform the animation
 
 ta-da that is all need to create Apple's loader animation. The complete source code is available [here on github]. 
 
+{% img /images/posts/2015-05-14/RMDownload_Indicator.gif "Animation Gif" %}
 
-
-![](http://s2.postimg.org/l3hnef3t5/RMDownload_Indicator.gif)
 
 [here on github]:https://github.com/MaheshRS/Download-Indicator
