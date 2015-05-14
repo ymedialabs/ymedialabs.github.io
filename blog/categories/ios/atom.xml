@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[YMediaLabs Engineering Blog]]></title>
-  <link href="http://ymedialabs.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Ios | YMediaLabs Engineering Blog]]></title>
+  <link href="http://ymedialabs.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://ymedialabs.github.io/"/>
   <updated>2015-05-14T10:44:14+05:30</updated>
   <id>http://ymedialabs.github.io/</id>
@@ -20,7 +20,7 @@
     <id>http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios</id>
     <content type="html"><![CDATA[<p>We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.</p>
 
-<p><img src="images/posts/2015-05-12/curve.png" title="&#34;Curve&#34;" alt="&#34;Curve&#34;"></p>
+<p><img src="images/posts/2015-05-12/curve.png" title="&ldquo;Curve&rdquo;" ></p>
 
 <p>In the above figure, red line shows the points we have. blue line represents the cardinal curve we want to create. Cardinal curve goes through all the points.</p>
 
@@ -41,7 +41,7 @@
 <pre><code>[bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
 </code></pre>
 
-<p><img src="images/posts/2015-05-12/quadratic.gif" title="&#34;Quadratic&#34;" alt="&#34;Quadratic&#34;"></p>
+<p><img src="images/posts/2015-05-12/quadratic.gif" title="&ldquo;Quadratic&rdquo;" ></p>
 
 <p>here P<sub>0</sub> is starting point and P<sub>2</sub> is ending point. P<sub>1</sub> is the Control Point.</p>
 
@@ -52,7 +52,7 @@
 <pre><code> [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
 </code></pre>
 
-<p><img src="images/posts/2015-05-12/cubic.gif" title="&#34;Cubic&#34;" alt="&#34;Cubic&#34;"></p>
+<p><img src="images/posts/2015-05-12/cubic.gif" title="&ldquo;Cubic&rdquo;" ></p>
 
 <p>here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2.</p>
 
@@ -66,7 +66,7 @@
 
 <p>consider the control points we need. see that at T2, the handle is paralled to the neighboring points. in order to calculate this, we will compute the derivatives at each point which would give us the tangents.</p>
 
-<p><img src="images/posts/2015-05-12/soln.png" title="&#34;Soln&#34;" alt="&#34;Soln&#34;"></p>
+<p><img src="images/posts/2015-05-12/soln.png" title="&ldquo;Soln&rdquo;" ></p>
 
 <p>the green bars are the computed derivatives at each of the points. first and last points would go towards the neighboring points.</p>
 
@@ -84,11 +84,11 @@
 
 <p>point derivatives can be computed by</p>
 
-<p><img src="images/posts/2015-05-12/point-derivatives.png" title="&#34;Derivatives&#34;" alt="&#34;Derivatives&#34;"></p>
+<p><img src="images/posts/2015-05-12/point-derivatives.png" title="&ldquo;Derivatives&rdquo;" ></p>
 
 <p>we need to calculate the control points from these. we can calculate those using.</p>
 
-<p><img src="images/posts/2015-05-12/controlpoints.png" title="&#34;ControlPoints&#34;" alt="&#34;ControlPoints&#34;"></p>
+<p><img src="images/posts/2015-05-12/controlpoints.png" title="&ldquo;ControlPoints&rdquo;" ></p>
 
 <p>Once we have the control points, we can easily compose the Bezier Path.</p>
 
@@ -127,19 +127,6 @@ return path;
 <h2>Code</h2>
 
 <p>Complete project at : <a href="https://github.com/ymedialabs/ykbezieradditions.git">YKBezierAdditions</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Lets Roll!]]></title>
-    <link href="http://ymedialabs.github.io/blog/2015/05/11/lets-roll/"/>
-    <updated>2015-05-11T17:10:51+05:30</updated>
-    <id>http://ymedialabs.github.io/blog/2015/05/11/lets-roll</id>
-    <content type="html"><![CDATA[<p>Welcome to YMediaLabs Engineering blog! This is a public forum where we share the latest things we work on. Somethings we think is good to share with the world. Fun things, interesting things and some amazing code.</p>
-
-<p>We are very exited to start this blog and lot of us have great things to share in the days to come.</p>
-
-<p>YMediaLabs is a complete interactive mobile solutions agency. We specialize in mobile app design and development for all major platforms, including the Apple iPhone, iPad, and Android. YMediaLabs is an award-winning, San Francisco Bay Area-based agency that has worked with small-to-medium businesses, disruptive startups, and Fortune 500 companies. Some of our key clients include American Express, Apple, eBay, EMC, First Data, L&#8217;Oreal, Montessorium, Staples, and Western Union. Our work has been featured by Apple, TechCrunch, Forbes and Mashable among others. To know more visit <a href="http://ymedialabs.com">YMediaLabs Website</a></p>
 ]]></content>
   </entry>
   
