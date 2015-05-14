@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>YMediaLabs Engineering Blog</title>
+  <title>Shaping Up With CAShapeLayer - YMediaLabs Engineering Blog</title>
   <meta name="author" content="YMediaLabs">
 
   
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://ymedialabs.github.io/">
+  <link rel="canonical" href="http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="YMediaLabs Engineering Blog" type="application/atom+xml">
@@ -61,15 +61,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a></h1>
+      <h1 class="entry-title">Shaping Up With CAShapeLayer</h1>
     
     
       <p class="meta">
@@ -85,7 +82,7 @@
   </header>
 
 
-  <div class="entry-content"><p>What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the <em>Apple&rsquo;s application circular loader</em>, there are no special classes that readily available for animation.</p>
+<div class="entry-content"><p>What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the <em>Apple&rsquo;s application circular loader</em>, there are no special classes that readily available for animation.</p>
 
 <p>This can be made possible with a special class <strong>CAShapeLayer</strong>. CAShapeLayer shapes itself to the path provided to it through the <em>path</em> property. The <em>path</em> property is a <em>CGPath</em> instance. We can use UIBezierPath API&rsquo;s to get the required shape and retrive the CGPaths.</p>
 
@@ -243,188 +240,46 @@
 
 <p><img src="/images/posts/2015-05-14/RMDownload_Indicator.gif" title="&#34;Animation Gif&#34;" alt="&#34;Animation Gif&#34;"></p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve Through a Set of 2D Points in iOS</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-05-12T21:47:19+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.</p>
-
-<p><img src="/images/posts/2015-05-12/curve.png" title="&#34;Curve&#34;" alt="&#34;Curve&#34;"></p>
-
-<p>In the above figure, red line shows the points we have. blue line represents the cardinal curve we want to create. Cardinal curve goes through all the points.</p>
-
-<h1>UIBezierPath</h1>
-
-<p>First the basics. there are two kinds of curves in UIBezierPath. Both of the curves need additional control points to define the curvature. we will need to calculate the control points to generate a smooth curve passing through given points.</p>
-
-<ul>
-<li>Quadratic</li>
-<li>Cubic</li>
-</ul>
-
-
-<h2>Quadratic</h2>
-
-<p>Quadratic curve has one control point which defines how the curvature of the bezier should be.</p>
-
-<pre><code>[bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
-</code></pre>
-
-<p><img src="/images/posts/2015-05-12/quadratic.gif" title="&#34;Quadratic&#34;" alt="&#34;Quadratic&#34;"></p>
-
-<p>here P<sub>0</sub> is starting point and P<sub>2</sub> is ending point. P<sub>1</sub> is the Control Point.</p>
-
-<h2>Cubic</h2>
-
-<p>Cubic curve has two control ponints which define its curvature.</p>
-
-<pre><code> [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
-</code></pre>
-
-<p><img src="/images/posts/2015-05-12/cubic.gif" title="&#34;Cubic&#34;" alt="&#34;Cubic&#34;"></p>
-
-<p>here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2.</p>
-
-<h1>Cardinal Curves</h1>
-
-<p>This curve passes through all given points and each segment can be composed of cubic spline segments. We will need to figure out all the control points for each of the points.</p>
-
-<p>Approximating with Cubic is easier and we go with that direction.</p>
-
-<h1>Solution</h1>
-
-<p>consider the control points we need. see that at T2, the handle is paralled to the neighboring points. in order to calculate this, we will compute the derivatives at each point which would give us the tangents.</p>
-
-<p><img src="/images/posts/2015-05-12/soln.png" title="&#34;Soln&#34;" alt="&#34;Soln&#34;"></p>
-
-<p>the green bars are the computed derivatives at each of the points. first and last points would go towards the neighboring points.</p>
-
-<ul>
-<li>each pair of points act as start and end of the curve</li>
-<li>for each start and end of curve we will compute the control points required</li>
-<li>for first and last point of the curve the control points will go towards the second and previous point respectively</li>
-<li>for any given point, the control points(T2) are tangents , tangent is parallel to previous two points and hence we can compute using derivatives at each point</li>
-</ul>
-
-
-<h2>Equations</h2>
-
-<p>Let P<sub>0</sub> , P<sub>1</sub> &hellip; P<sub>n</sub> be the points.</p>
-
-<p>point derivatives can be computed by</p>
-
-<p><img src="/images/posts/2015-05-12/point-derivatives.png" title="&#34;Derivatives&#34;" alt="&#34;Derivatives&#34;"></p>
-
-<p>we need to calculate the control points from these. we can calculate those using.</p>
-
-<p><img src="/images/posts/2015-05-12/controlpoints.png" title="&#34;ControlPoints&#34;" alt="&#34;ControlPoints&#34;"></p>
-
-<p>Once we have the control points, we can easily compose the Bezier Path.</p>
-
-<p>Alpha is a tension. which gives the amount of smoothness needed in the curve.</p>
-
-<h2>ObjC Pseudo Code</h2>
-
-<pre><code>NSMutableArray *points = [[NSMutableArray alloc] init];
-//populate points with CGPoint
-
-NSMutableArray *derivative = [[NSMutableArray alloc] init];
-
-for(NSInteger j=0;j&lt;points.count;j++) {
-    CGPoint prev = points[MAX(j-1,0)];
-    CGPoint next = points[MIN(j+1,points.count-1)];
-
-    derivative[j] = (next - prev) / 2;
-}
-
-UIBezierPath *path = [UIBezierPath bezierPath];
-for(NSUInteger i=0;i&lt;points.count;i++) {
-    if(i==0) {
-        [path moveToPoint:points[i]]
-    } else {
-        CGPoint endPoint = points[i];
-        CGPoint cp1 = points[i-1]+ derivative[i-1]/tension;
-        CGPoint cp2 = points[i] + derivatives[i]/tension;
-
-        [path addCurveToPoint:endPoint controlPoint1:cp1 controlPoint2:cp2];
-    }
-}
-
-return path;
-</code></pre>
-
-<h2>Code</h2>
-
-<p>Complete project at : <a href="https://github.com/ymedialabs/ykbezieradditions.git">YKBezierAdditions</a></p>
-</div>
-  
   
 
+<span class="byline author vcard">Posted by <span class="fn">Mahesh Shanbhag</span></span>
 
-    </article>
-  
-  
-    <article>
       
-  <header>
+
+
+
+
+<time class='entry-date' datetime='2015-05-14T12:19:13+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:19 pm</span></time>
+      
+
+
+    </p>
     
-      <h1 class="entry-title"><a href="/blog/2015/05/11/lets-roll/">Lets Roll!</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-05-11T17:10:51+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:10 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Welcome to YMediaLabs Engineering blog! This is a public forum where we share the latest things we work on. Somethings we think is good to share with the world. Fun things, interesting things and some amazing code.</p>
-
-<p>We are very exited to start this blog and lot of us have great things to share in the days to come.</p>
-
-<p>YMediaLabs is a complete interactive mobile solutions agency. We specialize in mobile app design and development for all major platforms, including the Apple iPhone, iPad, and Android. YMediaLabs is an award-winning, San Francisco Bay Area-based agency that has worked with small-to-medium businesses, disruptive startups, and Fortune 500 companies. Some of our key clients include American Express, Apple, eBay, EMC, First Data, L&#8217;Oreal, Montessorium, Staples, and Western Union. Our work has been featured by Apple, TechCrunch, Forbes and Mashable among others. To know more visit <a href="http://ymedialabs.com">YMediaLabs Website</a></p>
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/" data-via="ymedialabs" data-counturl="http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/" >Tweet</a>
+  
+  
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/" title="Previous Post: Draw a Bezier Curve through a set of 2D Points in iOS">&laquo; Draw a Bezier Curve through a set of 2D Points in iOS</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
 </div>
+
 <aside class="sidebar">
   
     <section>
@@ -450,6 +305,7 @@ return path;
 
   
 </aside>
+
 
     </div>
   </div>

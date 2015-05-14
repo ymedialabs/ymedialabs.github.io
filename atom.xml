@@ -4,7 +4,7 @@
   <title><![CDATA[YMediaLabs Engineering Blog]]></title>
   <link href="http://ymedialabs.github.io/atom.xml" rel="self"/>
   <link href="http://ymedialabs.github.io/"/>
-  <updated>2015-05-14T11:03:54+05:30</updated>
+  <updated>2015-05-14T12:35:53+05:30</updated>
   <id>http://ymedialabs.github.io/</id>
   <author>
     <name><![CDATA[YMediaLabs]]></name>
@@ -12,6 +12,171 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Shaping Up With CAShapeLayer]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/"/>
+    <updated>2015-05-14T12:19:13+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer</id>
+    <content type="html"><![CDATA[<p>What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the <em>Apple&rsquo;s application circular loader</em>, there are no special classes that readily available for animation.</p>
+
+<p>This can be made possible with a special class <strong>CAShapeLayer</strong>. CAShapeLayer shapes itself to the path provided to it through the <em>path</em> property. The <em>path</em> property is a <em>CGPath</em> instance. We can use UIBezierPath API&rsquo;s to get the required shape and retrive the CGPaths.</p>
+
+<p>Lets get started to design out custom <strong>Apple application circular loader</strong> using key frame animations</p>
+
+<p><strong>Create a CAShapeLayer</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>self.animatinglayer <span class="o">=</span> <span class="o">[</span>CAShapeLayer layer<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>self.animatingLayer.strokeColor <span class="o">=</span> &lt;<span class="c">#stroke color#&gt;;</span>
+</span><span class='line'>self.animatingLayer.fillColor <span class="o">=</span> &lt;<span class="c">#fill color#&gt;;</span>
+</span><span class='line'>self.animatingLayer.lineWidth <span class="o">=</span> &lt;<span class="c">#line width#&gt;;</span>
+</span><span class='line'>self.animatingLayer.frame <span class="o">=</span> self.bounds<span class="p">;</span>
+</span><span class='line'><span class="o">[</span>self.layer addSublayer:self.animatingLayer<span class="o">]</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Create a Initial BezierPath and assign it to the above layer above</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>UIBezierPath *initialPath <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span> //empty path
+</span><span class='line'>
+</span><span class='line'>// get the radius of the inner path
+</span><span class='line'>CGFloat <span class="nv">radius</span> <span class="o">=</span> MIN<span class="o">(</span>CGRectGetWidth<span class="o">(</span>self.bounds<span class="o">)</span>, CGRectGetHeight<span class="o">(</span>self.bounds<span class="o">))</span>/2<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>// add the arc
+</span><span class='line'><span class="o">[</span>initialPath addArcWithCenter:center radius:radius startAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> endAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> clockwise:YES<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>// <span class="nb">set </span>the path
+</span><span class='line'>self.animatinglayer.path <span class="o">=</span> initialPath.CGPath<span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>once we have the shape and the initial path all we need are the array of paths for key frame animation</p>
+
+<p><strong>Create a Initial BezierPath and assign it to the above layer above</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>- <span class="o">(</span>NSArray *<span class="o">)</span>keyframePathsWithDuration:<span class="o">(</span>CGFloat<span class="o">)</span>duration lastUpdatedAngle:<span class="o">(</span>CGFloat<span class="o">)</span>lastUpdatedAngle newAngle:<span class="o">(</span>CGFloat<span class="o">)</span>newAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    NSUInteger <span class="nv">frameCount</span> <span class="o">=</span> ceil<span class="o">(</span>duration * 60<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>    NSMutableArray *array <span class="o">=</span> <span class="o">[</span>NSMutableArray arrayWithCapacity:frameCount + 1<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span>int <span class="nv">frame</span> <span class="o">=</span> 0<span class="p">;</span> frame &lt;<span class="o">=</span> frameCount<span class="p">;</span> frame++<span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        CGFloat <span class="nv">startAngle</span> <span class="o">=</span> degreeToRadian<span class="o">(</span>-90<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>        CGFloat <span class="nv">endAngle</span> <span class="o">=</span> lastUpdatedAngle + <span class="o">(((</span>newAngle - lastUpdatedAngle<span class="o">)</span> * frame<span class="o">)</span> / frameCount<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="o">[</span>array addObject:<span class="o">(</span>id<span class="o">)([</span>self pathWithStartAngle:startAngle endAngle:endAngle radius:radius <span class="nb">type</span>:type<span class="o">]</span>.CGPath<span class="o">)]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="o">[</span>NSArray arrayWithArray:array<span class="o">]</span><span class="p">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>// Method to <span class="k">return</span> the bezier path with required start end angle and radius
+</span><span class='line'>- <span class="o">(</span>UIBezierPath *<span class="o">)</span>pathWithStartAngle:<span class="o">(</span>CGFloat<span class="o">)</span>startAngle endAngle:<span class="o">(</span>CGFloat<span class="o">)</span>endAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    BOOL <span class="nv">clockwise</span> <span class="o">=</span> startAngle &lt; endAngle<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    UIBezierPath *path <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    CGPoint <span class="nv">center</span> <span class="o">=</span> CGPointMake<span class="o">(</span>self.bounds.size.width / 2, self.bounds.size.height / 2<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="nb">type</span> <span class="o">==</span> kRMClosedIndicator<span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="o">[</span>path moveToPoint:center<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>        <span class="o">[</span>path closePath<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> path<span class="p">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>// Function to convert degree to radians
+</span><span class='line'>float degreeToRadian<span class="o">(</span>float degree<span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">((</span>degree * M_PI<span class="o">)</span>/180.0f<span class="o">)</span><span class="p">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>once we have the array of paths, we can perform the animation</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'> CAKeyframeAnimation *pathAnimation <span class="o">=</span> <span class="o">[</span>CAKeyframeAnimation animationWithKeyPath:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">[</span>pathAnimation setValues:self.paths<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">[</span>pathAnimation setDuration:self.animationDuration<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">[</span>pathAnimation setTimingFunction:<span class="o">[</span>CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut<span class="o">]]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">[</span>pathAnimation setRemovedOnCompletion:YES<span class="o">]</span><span class="p">;</span>
+</span><span class='line'>    <span class="o">[</span>self.animatingLayer addAnimation:pathAnimation forKey:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ta-da that is all need to create Apple&rsquo;s loader animation. The complete source code is available <a href="https://github.com/MaheshRS/Download-Indicator">here on github</a>.</p>
+
+<p><img src="http://ymedialabs.github.io/images/posts/2015-05-14/RMDownload_Indicator.gif" title="&#34;Animation Gif&#34;" alt="&#34;Animation Gif&#34;"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Draw a Bezier Curve Through a Set of 2D Points in iOS]]></title>
