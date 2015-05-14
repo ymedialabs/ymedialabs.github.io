@@ -10,7 +10,7 @@ categories: iOS
 We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.
 
 
-{% img images/posts/2015-05-12/curve.png "Curve" %}
+{% img /images/posts/2015-05-12/curve.png "Curve" %}
 
 In the above figure, red line shows the points we have. blue line represents the cardinal curve we want to create. Cardinal curve goes through all the points.
 
@@ -27,7 +27,7 @@ Quadratic curve has one control point which defines how the curvature of the bez
 
     [bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
 
-{% img images/posts/2015-05-12/quadratic.gif "Quadratic" %}
+{% img /images/posts/2015-05-12/quadratic.gif "Quadratic" %}
 
 here P<sub>0</sub> is starting point and P<sub>2</sub> is ending point. P<sub>1</sub> is the Control Point.
 
@@ -37,7 +37,7 @@ Cubic curve has two control ponints which define its curvature.
 
      [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
 
-{% img images/posts/2015-05-12/cubic.gif "Cubic" %}
+{% img /images/posts/2015-05-12/cubic.gif "Cubic" %}
 
 here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2. 
 
@@ -53,7 +53,7 @@ Approximating with Cubic is easier and we go with that direction.
 
 consider the control points we need. see that at T2, the handle is paralled to the neighboring points. in order to calculate this, we will compute the derivatives at each point which would give us the tangents.
 
-{% img images/posts/2015-05-12/soln.png "Soln" %}
+{% img /images/posts/2015-05-12/soln.png "Soln" %}
 
 the green bars are the computed derivatives at each of the points. first and last points would go towards the neighboring points.
 
@@ -69,11 +69,11 @@ Let P<sub>0</sub> , P<sub>1</sub> ... P<sub>n</sub> be the points.
 
 point derivatives can be computed by
 
-{% img images/posts/2015-05-12/point-derivatives.png "Derivatives" %}
+{% img /images/posts/2015-05-12/point-derivatives.png "Derivatives" %}
 
 we need to calculate the control points from these. we can calculate those using.
 
-{% img images/posts/2015-05-12/controlpoints.png "ControlPoints" %}
+{% img /images/posts/2015-05-12/controlpoints.png "ControlPoints" %}
 
 Once we have the control points, we can easily compose the Bezier Path.
 
