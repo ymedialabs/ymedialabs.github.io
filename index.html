@@ -9,7 +9,7 @@
   <meta name="author" content="YMediaLabs">
 
   
-  <meta name="description" content="What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties &hellip;">
+  <meta name="description" content="I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,64 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-05-25T17:36:08+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:36 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using <strong>dispatch_after</strong> API. I would more like to use callbacks which notifies the completion of animation.</p>
+
+<p>iOS provides these call backs via <strong>CATransaction</strong>. CATransaction groups several mono animation transaction into a atomic trasaction. All the changes to the rendering tree in the new run loop must be applied here.</p>
+
+<p>Say there are two mono animations A (say translates a view in time t1) and B (say say scales a view in a time t2: t2>t1) and some process P needs to be fired after all the animation is complete i.e after time t2. Usually dispatch_after API is used to fire P after t2.</p>
+
+<p>The usage of dispatch_after can be eliminate as follows:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="n">begin</span><span class="p">];</span>
+</span><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="nl">setCompletionBlock</span><span class="p">:</span><span class="o">^</span><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// call process P</span>
+</span><span class='line'><span class="p">}];</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Animation A;</span>
+</span><span class='line'><span class="c1">// Animation B;</span>
+</span><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="n">commit</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>when animation A and B are performerd in between [CATransaction begin] and [CATransaction commit] calls, the animations are considered as an atomic change and are applied to the render tree the same time and the transaction completion block is called when the atomic animation completes.</p>
+
+<p>This way we can eliminate the usage of dispatch_after API reducing the overhead of changing the adjusting the time if the animation duration changes.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -430,6 +488,10 @@ return path;
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | YMediaLabs Engineering Blog]]></title>
   <link href="http://ymedialabs.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://ymedialabs.github.io/"/>
-  <updated>2015-05-14T12:35:53+05:30</updated>
+  <updated>2015-05-25T18:01:18+05:30</updated>
   <id>http://ymedialabs.github.io/</id>
   <author>
     <name><![CDATA[YMediaLabs]]></name>
@@ -14,13 +14,148 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Possible Abuse of Dispatch_after]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/"/>
+    <updated>2015-05-25T17:36:08+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after</id>
+    <content type="html"><![CDATA[<p>I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using <strong>dispatch_after</strong> API. I would more like to use callbacks which notifies the completion of animation.</p>
+
+<p>iOS provides these call backs via <strong>CATransaction</strong>. CATransaction groups several mono animation transaction into a atomic trasaction. All the changes to the rendering tree in the new run loop must be applied here.</p>
+
+<p>Say there are two mono animations A (say translates a view in time t1) and B (say say scales a view in a time t2: t2>t1) and some process P needs to be fired after all the animation is complete i.e after time t2. Usually dispatch_after API is used to fire P after t2.</p>
+
+<p>The usage of dispatch_after can be eliminate as follows:
+&#8220;`objc
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+        // call process P
+    }];</p>
+
+<pre><code>// Animation A;
+// Animation B;
+[CATransaction commit];
+</code></pre>
+
+<p>&#8220;`</p>
+
+<p>when animation A and B are performerd in between [CATransaction begin] and [CATransaction commit] calls, the animations are considered as an atomic change and are applied to the render tree the same time and the transaction completion block is called when the atomic animation completes.</p>
+
+<p>This way we can eliminate the usage of dispatch_after API reducing the overhead of changing the adjusting the time if the animation duration changes.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Shaping Up With CAShapeLayer]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/"/>
+    <updated>2015-05-14T12:19:13+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer</id>
+    <content type="html"><![CDATA[<p>What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the <em>Apple&rsquo;s application circular loader</em>, there are no special classes that readily available for animation.</p>
+
+<p>This can be made possible with a special class <strong>CAShapeLayer</strong>. CAShapeLayer shapes itself to the path provided to it through the <em>path</em> property. The <em>path</em> property is a <em>CGPath</em> instance. We can use UIBezierPath API&rsquo;s to get the required shape and retrive the CGPaths.</p>
+
+<p>Lets get started to design out custom <strong>Apple application circular loader</strong> using key frame animations</p>
+
+<p><strong>Create a CAShapeLayer</strong>
+&#8220;`objc
+self.animatinglayer = [CAShapeLayer layer];
+self.animatingLayer.strokeColor = &lt;#stroke color#>;
+self.animatingLayer.fillColor = &lt;#fill color#>;
+self.animatingLayer.lineWidth = &lt;#line width#>;
+self.animatingLayer.frame = self.bounds;
+[self.layer addSublayer:self.animatingLayer];</p>
+
+<pre><code>
+**Create a Initial BezierPath and assign it to the above layer above**
+</code></pre>
+
+<p>UIBezierPath *initialPath = [UIBezierPath bezierPath]; //empty path</p>
+
+<p>// get the radius of the inner path
+CGFloat radius = MIN(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))/2;</p>
+
+<p>// add the arc
+[initialPath addArcWithCenter:center radius:radius startAngle:degreeToRadian(-90) endAngle:degreeToRadian(-90) clockwise:YES];</p>
+
+<p>// set the path
+self.animatinglayer.path = initialPath.CGPath;
+&#8220;`</p>
+
+<p>once we have the shape and the initial path all we need are the array of paths for key frame animation</p>
+
+<p><strong>Create a Initial BezierPath and assign it to the above layer above</strong>
+&#8220;`objc
+- (NSArray <em>)keyframePathsWithDuration:(CGFloat)duration lastUpdatedAngle:(CGFloat)lastUpdatedAngle newAngle:(CGFloat)newAngle radius:(CGFloat)radius type:(RMIndicatorType)type
+{
+    NSUInteger frameCount = ceil(duration * 60);
+    NSMutableArray </em>array = [NSMutableArray arrayWithCapacity:frameCount + 1];
+    for (int frame = 0; frame &lt;= frameCount; frame++)
+    {
+        CGFloat startAngle = degreeToRadian(-90);
+        CGFloat endAngle = lastUpdatedAngle + (((newAngle - lastUpdatedAngle) * frame) / frameCount);</p>
+
+<pre><code>    [array addObject:(id)([self pathWithStartAngle:startAngle endAngle:endAngle radius:radius type:type].CGPath)];
+}
+
+return [NSArray arrayWithArray:array];
+</code></pre>
+
+<p>}</p>
+
+<p>// Method to return the bezier path with required start end angle and radius
+- (UIBezierPath *)pathWithStartAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle radius:(CGFloat)radius type:(RMIndicatorType)type
+{
+    BOOL clockwise = startAngle &lt; endAngle;</p>
+
+<pre><code>UIBezierPath *path = [UIBezierPath bezierPath];
+CGPoint center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
+
+if(type == kRMClosedIndicator)
+{
+    [path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise];
+}
+else
+{
+    [path moveToPoint:center];
+    [path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise];
+    [path closePath];
+}
+return path;
+</code></pre>
+
+<p>}</p>
+
+<p>// Function to convert degree to radians
+float degreeToRadian(float degree)
+{
+    return ((degree * M_PI)/180.0f);
+}</p>
+
+<pre><code>
+once we have the array of paths, we can perform the animation
+</code></pre>
+
+<p> CAKeyframeAnimation *pathAnimation = [CAKeyframeAnimation animationWithKeyPath:@&ldquo;path&rdquo;];
+    [pathAnimation setValues:self.paths];
+    [pathAnimation setDuration:self.animationDuration];
+    [pathAnimation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+    [pathAnimation setRemovedOnCompletion:YES];
+    [self.animatingLayer addAnimation:pathAnimation forKey:@&ldquo;path&rdquo;];
+&#8220;`</p>
+
+<p>ta-da that is all need to create Apple&rsquo;s loader animation. The complete source code is available <a href="https://github.com/MaheshRS/Download-Indicator">here on github</a>.</p>
+
+<p>{% img /images/posts/2015-05-14/RMDownload_Indicator.gif &ldquo;Animation Gif&rdquo; %}</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Draw a Bezier Curve Through a Set of 2D Points in iOS]]></title>
     <link href="http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/"/>
     <updated>2015-05-12T21:47:19+05:30</updated>
     <id>http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios</id>
     <content type="html"><![CDATA[<p>We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.</p>
 
-<p><img src="/images/posts/2015-05-12/curve.png" title="&ldquo;Curve&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/curve.png &ldquo;Curve&rdquo; %}</p>
 
 <p>In the above figure, red line shows the points we have. blue line represents the cardinal curve we want to create. Cardinal curve goes through all the points.</p>
 
@@ -41,7 +176,7 @@
 <pre><code>[bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
 </code></pre>
 
-<p><img src="/images/posts/2015-05-12/quadratic.gif" title="&ldquo;Quadratic&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/quadratic.gif &ldquo;Quadratic&rdquo; %}</p>
 
 <p>here P<sub>0</sub> is starting point and P<sub>2</sub> is ending point. P<sub>1</sub> is the Control Point.</p>
 
@@ -52,7 +187,7 @@
 <pre><code> [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
 </code></pre>
 
-<p><img src="/images/posts/2015-05-12/cubic.gif" title="&ldquo;Cubic&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/cubic.gif &ldquo;Cubic&rdquo; %}</p>
 
 <p>here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2.</p>
 
@@ -66,7 +201,7 @@
 
 <p>consider the control points we need. see that at T2, the handle is paralled to the neighboring points. in order to calculate this, we will compute the derivatives at each point which would give us the tangents.</p>
 
-<p><img src="/images/posts/2015-05-12/soln.png" title="&ldquo;Soln&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/soln.png &ldquo;Soln&rdquo; %}</p>
 
 <p>the green bars are the computed derivatives at each of the points. first and last points would go towards the neighboring points.</p>
 
@@ -84,11 +219,11 @@
 
 <p>point derivatives can be computed by</p>
 
-<p><img src="/images/posts/2015-05-12/point-derivatives.png" title="&ldquo;Derivatives&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/point-derivatives.png &ldquo;Derivatives&rdquo; %}</p>
 
 <p>we need to calculate the control points from these. we can calculate those using.</p>
 
-<p><img src="/images/posts/2015-05-12/controlpoints.png" title="&ldquo;ControlPoints&rdquo;" ></p>
+<p>{% img /images/posts/2015-05-12/controlpoints.png &ldquo;ControlPoints&rdquo; %}</p>
 
 <p>Once we have the control points, we can easily compose the Bezier Path.</p>
 
@@ -96,32 +231,32 @@
 
 <h2>ObjC Pseudo Code</h2>
 
-<pre><code>NSMutableArray *points = [[NSMutableArray alloc] init];
-//populate points with CGPoint
+<pre><code class="objc">    NSMutableArray *points = [[NSMutableArray alloc] init];
+    //populate points with CGPoint
 
-NSMutableArray *derivative = [[NSMutableArray alloc] init];
+    NSMutableArray *derivative = [[NSMutableArray alloc] init];
 
-for(NSInteger j=0;j&lt;points.count;j++) {
-    CGPoint prev = points[MAX(j-1,0)];
-    CGPoint next = points[MIN(j+1,points.count-1)];
+    for(NSInteger j=0;j&lt;points.count;j++) {
+        CGPoint prev = points[MAX(j-1,0)];
+        CGPoint next = points[MIN(j+1,points.count-1)];
 
-    derivative[j] = (next - prev) / 2;
-}
-
-UIBezierPath *path = [UIBezierPath bezierPath];
-for(NSUInteger i=0;i&lt;points.count;i++) {
-    if(i==0) {
-        [path moveToPoint:points[i]]
-    } else {
-        CGPoint endPoint = points[i];
-        CGPoint cp1 = points[i-1]+ derivative[i-1]/tension;
-        CGPoint cp2 = points[i] + derivatives[i]/tension;
-
-        [path addCurveToPoint:endPoint controlPoint1:cp1 controlPoint2:cp2];
+        derivative[j] = (next - prev) / 2;
     }
-}
 
-return path;
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    for(NSUInteger i=0;i&lt;points.count;i++) {
+        if(i==0) {
+            [path moveToPoint:points[i]]
+        } else {
+            CGPoint endPoint = points[i];
+            CGPoint cp1 = points[i-1]+ derivative[i-1]/tension;
+            CGPoint cp2 = points[i] + derivatives[i]/tension;
+
+            [path addCurveToPoint:endPoint controlPoint1:cp1 controlPoint2:cp2];
+        }
+    }
+
+    return path;
 </code></pre>
 
 <h2>Code</h2>
