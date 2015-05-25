@@ -4,7 +4,7 @@ title: "Possible abuse of dispatch_after"
 date: 2015-05-25 17:36:08 +0530
 comments: true
 author: Mahesh Shanbhag
-categories: 
+categories: iOS
 ---
 
 I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using **dispatch_after** API. I would more like to use callbacks which notifies the completion of animation.
@@ -14,7 +14,7 @@ iOS provides these call backs via **CATransaction**. CATransaction groups severa
 Say there are two mono animations A (say translates a view in time t1) and B (say say scales a view in a time t2: t2>t1) and some process P needs to be fired after all the animation is complete i.e after time t2. Usually dispatch_after API is used to fire P after t2.
 
 The usage of dispatch_after can be eliminate as follows:
-```
+```objc
     [CATransaction begin];
     [CATransaction setCompletionBlock:^{
         // call process P

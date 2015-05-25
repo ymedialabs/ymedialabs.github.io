@@ -82,6 +82,7 @@ Alpha is a tension. which gives the amount of smoothness needed in the curve.
 ## ObjC Pseudo Code
 
 
+```objc
     NSMutableArray *points = [[NSMutableArray alloc] init];
     //populate points with CGPoint
 
@@ -108,6 +109,7 @@ Alpha is a tension. which gives the amount of smoothness needed in the curve.
     }
 
     return path;
+```
 
 ## Code
 

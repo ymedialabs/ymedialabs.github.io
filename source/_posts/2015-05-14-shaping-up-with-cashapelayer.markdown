@@ -4,7 +4,7 @@ author: Mahesh Shanbhag
 title: "Shaping up with CAShapeLayer"
 date: 2015-05-14 12:19:13 +0530
 comments: true
-categories: 
+categories: iOS
 ---
 
 What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the *Apple's application circular loader*, there are no special classes that readily available for animation.
@@ -14,7 +14,7 @@ This can be made possible with a special class **CAShapeLayer**. CAShapeLayer sh
 Lets get started to design out custom **Apple application circular loader** using key frame animations
 
 **Create a CAShapeLayer**
-```sh
+```objc
 self.animatinglayer = [CAShapeLayer layer];
 self.animatingLayer.strokeColor = <#stroke color#>;
 self.animatingLayer.fillColor = <#fill color#>;
@@ -25,7 +25,7 @@ self.animatingLayer.frame = self.bounds;
 ```
 
 **Create a Initial BezierPath and assign it to the above layer above**
-```sh
+```objc
 UIBezierPath *initialPath = [UIBezierPath bezierPath]; //empty path
 
 // get the radius of the inner path
@@ -41,7 +41,7 @@ self.animatinglayer.path = initialPath.CGPath;
 once we have the shape and the initial path all we need are the array of paths for key frame animation
 
 **Create a Initial BezierPath and assign it to the above layer above**
-```sh
+```objc
 - (NSArray *)keyframePathsWithDuration:(CGFloat)duration lastUpdatedAngle:(CGFloat)lastUpdatedAngle newAngle:(CGFloat)newAngle radius:(CGFloat)radius type:(RMIndicatorType)type
 {
     NSUInteger frameCount = ceil(duration * 60);
@@ -87,7 +87,7 @@ float degreeToRadian(float degree)
 ```
 
 once we have the array of paths, we can perform the animation
-```sh
+```objc
  CAKeyframeAnimation *pathAnimation = [CAKeyframeAnimation animationWithKeyPath:@"path"];
     [pathAnimation setValues:self.paths];
     [pathAnimation setDuration:self.animationDuration];
