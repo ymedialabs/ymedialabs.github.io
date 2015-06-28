@@ -1,0 +1,189 @@
+---
+layout: post
+title: "Apple Watch Connectivity"
+date: 2015-06-19 21:45:45 +0530
+comments: true
+author: Karthik Mitta
+categories: iOS
+---
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apple Watch uses Wi-Fi and Bluetooth to communicate with your paired iPhone, switching between connections as needed:  
+
+* Apple Watch uses Bluetooth when your iPhone is near, which conserves power.  
+* If Bluetooth isn’t available, Apple Watch will try to use Wi-Fi. For example, if compatible Wi-Fi is available and your iPhone isn't in Bluetooth range,Apple Watch uses Wi-Fi.
+
+<center><img src="http://bradymower.com/wp-content/uploads/2015/02/Distance-between-iPhone-and-Apple-Watch.jpg" align="center" width="400" height="200" /></center>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To enjoy every feature on your Apple Watch, you'll need to enable Wi-Fi and Bluetooth on your paired iPhone.Apple Watch compatible with Wi-Fi 802.11b/g and Bluetooth 4.0.
+
+### How do we communicate between watch and iPhone app ?
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The communication process between both devices is entirely different in watchOS 2 compared from watchOS 1. In this article, I am going to explain in detail, that how communication works in both OS versions.
+
+**<u>WatchOS 1:</u>**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Basic communiation types are listed below:  
+1. Message transfer.    
+2. Sharing Data or files with Your Containing iOS App.
+
+**Message transfer:**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; It's a way to communicate directly from watch to iPhone app and get reply back, using below communication API in watch kit framework.
+
+```objc
++(BOOL)openParentApplication:(NSDictionary * nonnull)userInfo reply:(void (^ nullable)(NSDictionary * nonnull replyInfo, NSError * nullable error))reply;
+```
+
+userInfo:&nbsp;&nbsp;&nbsp;A dictionary containing data to pass to the iOS app. Use this                     dictionary to pass information to the iOS app so that it can perform any needed tasks. The contents of the dictionary must be serializable to a property list file. This parameter must not be nil.
+
+reply:&nbsp;&nbsp;&nbsp;It's a block with response data (NSDictionary) & error object for the request send by watch app.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This api belongs to **WKInterfaceController** class, as because every interface controller in watch extension may need to communicate parent iOS app at certain time. If iPhone app is not running, then this api call will wake up the app in background and do the needful.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The otherside in iPhone app, the below delegate method will get called in appDelegate.
+
+```objc
+- (void)application:(UIApplication *)application handleWatchKitExtensionRequest:(NSDictionary *)userInfo reply:(void(^)(NSDictionary *replyInfo))reply
+```
+**Usage**
+
+```objc
+// Method in apple watch app
+-(NSInteger)getTheiPhoneAppStatus
+{
+    NSInteger loginStatus = 0;
+    [WKInterfaceController openParentApplication:@{@"requestType":@"getLoginStatus"} reply:^(NSDictionary *replyInfo, NSError *error) 
+    {
+        if (error == nil)
+        {
+            NSLog(@"Error %@",error.localizedDescription);
+        }
+        else if(replyInfo != nil)
+        {
+            loginStatus = [[replyInfo valueForKey:@"loginStatus"] integerValue];
+        }
+    }];
+    return loginStatus;
+}
+
+// Delegate method in iPhone app
+- (void)application:(UIApplication *)application handleWatchKitExtensionRequest:(NSDictionary *)userInfo reply:(void(^)(NSDictionary *replyInfo))reply
+{
+    NSDictionary *responseDict = nil;
+    NSString *requestType = [userInfo valueForKey:@"requestType"];
+    if([requestType isEqualToString:@"getLoginStatus"])
+    {
+        responseDict = @{@"loginStatus":[NSNumber numberWithInteger:self.loginStatus]};
+    }
+    reply(responseDict);
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; By using above api, a watch app can communicate with iPhone app. But to communicate from iPhone to watch, there is no direct api provided by apple. For that you need to
+use notification center. NSNotificationCenter API's will work only in same bundle. As you know, iPhone & watch app are two differnt bundles, you can use corefoundation framework api **CFNotificationCenterGetDarwinNotifyCenter** to send notification from iphone to watch app & viceversa.
+
+```objc
+// Posting notification
+- (void)sendNotificationForMessageWithIdentifier:(NSString *)identifier
+{
+    CFNotificationCenterRef const Notificationcenter = CFNotificationCenterGetDarwinNotifyCenter();
+    CFDictionaryRef const userInfo = NULL;
+    BOOL const deliverImmediately = YES;
+    CFStringRef str = (__bridge CFStringRef)identifier;
+    CFNotificationCenterPostNotification(Notificationcenter, str, NULL, userInfo, deliverImmediately);
+}
+```
+
+like NSNotificationCenter you need to add & remove observer like below.
+
+```objc
+- (void)registerNotificationsWithIdentifier:(NSString *)identifier 
+{
+    CFNotificationCenterRef const center = CFNotificationCenterGetDarwinNotifyCenter();
+    CFStringRef str = (__bridge CFStringRef)identifier;
+    CFNotificationCenterAddObserver(center,
+    (__bridge const void *)(self),
+    WatchNotificationCallback,
+    str,
+    NULL,
+    CFNotificationSuspensionBehaviorDeliverImmediately);
+}
+
+- (void)unregisterNotificationsWithIdentifier:(NSString *)identifier 
+{
+    CFNotificationCenterRef const center = CFNotificationCenterGetDarwinNotifyCenter();
+    CFStringRef str = (__bridge CFStringRef)identifier;
+    CFNotificationCenterRemoveObserver(center,
+    (__bridge const void *)(self),
+    str,
+    NULL);
+}
+
+void WatchNotificationCallback(CFNotificationCenterRef center,
+void * observer,
+CFStringRef name,
+void const * object,
+CFDictionaryRef userInfo) 
+{
+    NSString *identifier = (__bridge NSString *)name;
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"WatchDataSynNotificationName"
+    object:nil
+    userInfo:@{@"WatchIdentifier" : identifier}];
+}
+```
+in order to handle the above notifications, app should be in active state.
+
+**Sharing Data or files with Your Containing iOS App :**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In order to transfer data/files between watch & iPhone app, use a shared app group to store that data. An app group is a secure container that multiple processes can access. Because your WatchKit extension and iOS app run in separate sandbox environments, they normally do not share files or communicate directly with one another. An app group lets the two processes share files or user defaults.
+
+```objc
+// Sharing files
+- (NSString *)getSharedDirectoryPath 
+{
+    NSURL *appGroupContainer = [self.fileManager containerURLForSecurityApplicationGroupIdentifier:@""group.com.companyname.productname];
+    NSString *appGroupContainerPath = [appGroupContainer path];
+    NSString *directoryPath = appGroupContainerPath;
+    if (self.dirName != nil) 
+    {
+        directoryPath = [appGroupContainerPath stringByAppendingPathComponent:self.dirName];
+    }
+    [self.fileManager createDirectoryAtPath:directoryPath withIntermediateDirectories:YES attributes:nil error:NULL];
+    return directoryPath;
+}
+```
+```objc
+// Shared Userdefaults
+- (void)storeDataInSharedDefaults:(id)data 
+{
+    NSUserDefaults *sharedUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"group.com.companyname.productname"];
+    [sharedUserDefaults setObject:data forKey:@"watchIdentifier"];
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; After storing the data in shared container, use **openParentApplication:** api or **CFNotificationCenterGetDarwinNotifyCenter** to notify the receiver app for access data.
+
+**<u>WatchOS 2:</u>**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In Watch OS 2, apple moved the watch extension bundle & data source to watch itself, previously it was in iPhone only. No more **openParentApplication:** api call, **CFNotificationCenterGetDarwinNotifyCenter** & **sharedGroups**. Apple itself given new framework for all sorts of communication named WatchConnectivity, supports for NSURLSession & codedata.
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Before using WatchConnectivity framework, you need some setup like below. This will ensure that device and Watch OS are supported to use WatchConnectivity api's. It's worth to setup this at the earlier stage of your app like in iOS app appDelegate & watch app extensionDelegate class, as becuase reciever app may need some data at early stage.
+
+``` objc
+// Always set your apps up to receive incoming WatchConnectivity content
+
+if ([WCSession isSupported])
+{
+    self.session = [WCSession defaultSession];
+    self.session.delegate = self; // conforms to WCSessionDelegate
+    [self.session activateSession];
+}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; After activating the watchconnectivy session, you need to check whether your iPhone is paired with any watch device or not by usng below api.
+``` objc
+self.session.paired == false;
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; At first it will be false, as watch is not paired. Once iPhone pair with any watch device, iPhone app will get notify about the state change of pair by invoking a below delegare method, if iPhone app is active.
+``` objc
+- (void)sessionWatchStateDidChange:(WCSession *)session;
+```
