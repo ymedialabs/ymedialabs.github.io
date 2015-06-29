@@ -167,11 +167,10 @@ in order to handle the above notifications, app should be in active state.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In Watch OS 2, apple moved the watch extension bundle & data source to watch itself, previously it was in iPhone only. No more **openParentApplication:** api call, **CFNotificationCenterGetDarwinNotifyCenter** & **sharedGroups**. Apple itself given new framework for all sorts of communication named WatchConnectivity, supports for NSURLSession & codedata.
 
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Before using WatchConnectivity framework, you need some setup like below. This will ensure that device and Watch OS are supported to use WatchConnectivity api's. It's worth to setup this at the earlier stage of your app like in iOS app appDelegate & watch app extensionDelegate class, as becuase reciever app may need some data at early stage.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Before using WatchConnectivity framework, you need some setup like below. This will ensure that device and Watch OS are supported to use WatchConnectivity api's. It's worth to setup this at the earlier stage of your app like in iOS app appDelegate & watch app extensionDelegate class, as becuase receiver app may need some data at early stage.
 
 ``` objc
 // Always set your apps up to receive incoming WatchConnectivity content
-
 if ([WCSession isSupported])
 {
     self.session = [WCSession defaultSession];
@@ -183,7 +182,58 @@ if ([WCSession isSupported])
 ``` objc
 self.session.paired == false;
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; At first it will be false, as watch is not paired. Once iPhone pair with any watch device, iPhone app will get notify about the state change of pair by invoking a below delegare method, if iPhone app is active.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; At first it will be false, as watch is not paired. Once iPhone pair with any watch device, iPhone app will get notify about the state change of pair by invoking a below delegare method, if iPhone app is running.
+
 ``` objc
 - (void)sessionWatchStateDidChange:(WCSession *)session;
 ```
+next step is watch app installation validation. If user install the watch app later after pairing, then iPhone app will get notify about the installion state change by invoking a above same delegare method, if iPhone app is running. The below validations are only for iPhone app, because doing this from watch app means it's already paired and installed.
+
+``` objc
+// Watch connectivity session delegate method
+- (void)sessionWatchStateDidChange:(WCSession *)session
+{
+    if(self.session.paired = YES && self.session.watchAppInstalled = YES)
+    {
+        // Implement need full task here.
+    }
+}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; When ever watchAppInstalled become true, apple will create a directory in your container, few potins need to consider before storing some data in that container:
+
+* Directory and its contents’ lifetime is tied to the watchAppInstalled property, it means when ever watch app uninstalled all content will get delete.
+* Store only for data relevant to the specific instance of your Watch app like below, as apple will clear all of your data while uninstalling the app or unpair the device.
+
+    1. Last queued item marker
+    2. Preferences
+    3. Files queued for transfer
+
+you can get that container path by using below api.
+
+```objc
+self.session.watchDirectoryURL
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Now you are good enough to communicate between both apps. Apple divided the communication into two categories:
+
+ * Background transfers
+ * Interactive messaging
+
+**Background transfers**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This meant for content not needed immediately at receiver side, OS intelligently transfer the content. If container app contains some content and fetching some more content from server & receiver app is not in active state, that means receiver not needed the content immediately. So, it will queue up content in system. And system will validate the right conditions intelligently to transfer the content across, like it will consider power, performance & app state etc. System will transfer content, if conditions satisfied and then it will delivered to receiver app when it launches.It divided into three types:
+
+1. Application context
+2. Userinfo transfer
+3. file transfer
+
+**Application context**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This will offer a single set of information to other side app. For example
+take FoodPanda iPhone application, which shows the restaurants based on your current of choosed location. If you
+want to show the set of restaurants in apple watch as well. Then store them in application context, when ever 
+user launches the app the content will be there to show. There are two main properties **applicationContext** 
+& **receivedApplicationContext** which stores data(dictionary) in sender & receiver apps respectively.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FoodPanda iPhone app will call an api **updateApplicationContext:**, which
+will store the data in **applicationContext** property, if iPhone app pushing latest context before transfer, 
+system will replace the existing data in **applicationContext** property.
+
