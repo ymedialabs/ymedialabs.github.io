@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Apple Watch Connectivity"
-date: 2015-06-19 21:45:45 +0530
+date: 2015-06-30 13:11:39 +0530
 comments: true
 author: Karthik Mitta
 categories: iOS
@@ -11,7 +11,7 @@ categories: iOS
 * Apple Watch uses Bluetooth when your iPhone is near, which conserves power.  
 * If Bluetooth isn’t available, Apple Watch will try to use Wi-Fi. For example, if compatible Wi-Fi is available and your iPhone isn't in Bluetooth range,Apple Watch uses Wi-Fi.
 
-<center><img src="http://bradymower.com/wp-content/uploads/2015/02/Distance-between-iPhone-and-Apple-Watch.jpg" align="center" width="400" height="200" /></center>
+<center><img src="/images/posts/2015-06-30/Distance-between-iPhone-and-Apple-Watch.jpg" align="center" width="400" height="200" /></center>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To enjoy every feature on your Apple Watch, you'll need to enable Wi-Fi and Bluetooth on your paired iPhone.Apple Watch compatible with Wi-Fi 802.11b/g and Bluetooth 4.0.
 
@@ -195,7 +195,7 @@ next step is watch app installation validation. If user install the watch app la
 {
     if(self.session.paired = YES && self.session.watchAppInstalled = YES)
     {
-        // Implement need full task here.
+    // Implement need full task here.
     }
 }
 ```
@@ -204,9 +204,9 @@ next step is watch app installation validation. If user install the watch app la
 * Directory and its contents’ lifetime is tied to the watchAppInstalled property, it means when ever watch app uninstalled all content will get delete.
 * Store only for data relevant to the specific instance of your Watch app like below, as apple will clear all of your data while uninstalling the app or unpair the device.
 
-    1. Last queued item marker
-    2. Preferences
-    3. Files queued for transfer
+1. Last queued item marker
+2. Preferences
+3. Files queued for transfer
 
 you can get that container path by using below api.
 
@@ -215,10 +215,10 @@ self.session.watchDirectoryURL
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Now you are good enough to communicate between both apps. Apple divided the communication into two categories:
 
- * Background transfers
- * Interactive messaging
+* Background transfers
+* Interactive messaging
 
-**Background transfers**
+###**1) Background transfers**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This meant for content not needed immediately at receiver side, OS intelligently transfer the content. If container app contains some content and fetching some more content from server & receiver app is not in active state, that means receiver not needed the content immediately. So, it will queue up content in system. And system will validate the right conditions intelligently to transfer the content across, like it will consider power, performance & app state etc. System will transfer content, if conditions satisfied and then it will delivered to receiver app when it launches.It divided into three types:
 
@@ -228,12 +228,177 @@ self.session.watchDirectoryURL
 
 **Application context**
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This will offer a single set of information to other side app. For example
-take FoodPanda iPhone application, which shows the restaurants based on your current of choosed location. If you
-want to show the set of restaurants in apple watch as well. Then store them in application context, when ever 
-user launches the app the content will be there to show. There are two main properties **applicationContext** 
-& **receivedApplicationContext** which stores data(dictionary) in sender & receiver apps respectively.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FoodPanda iPhone app will call an api **updateApplicationContext:**, which
-will store the data in **applicationContext** property, if iPhone app pushing latest context before transfer, 
-system will replace the existing data in **applicationContext** property.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This will offer a single set of information to other side app. For example take FoodPanda iPhone application, which shows the restaurants based on your current of choosed
+location. If you want to show the set of restaurants in apple watch as well. Then store them in application context, when ever user launches the watch app the content will be there to show. There are two main
+properties **applicationContext** & **receivedApplicationContext** which stores data(dictionary) in sender & receiver apps respectively.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FoodPanda iPhone app will call an api **updateApplicationContext:**, which will store the data in **applicationContext** property, if iPhone app pushing latest context before
+transfer, system will replace the existing data in **applicationContext** property. Always latest set of content will be there in applicationContext. And you can use this context to show subset of data in watch glance
+as well.
 
+``` objc
+// Sender side code
+-(void)updateTheLatestContext
+{
+    NSDictionary *context = // Create context dictionary with latest state;
+    NSError *error = nil;
+    [[WCSession defaultSession] updateApplicationContext:context error:&error];
+    if (error != nil) {
+        // Handle any errors
+    }
+}
+```
+``` objc
+// Receiver side delegate method to handle it.
+-(void)session:(nonnull WCSession *)session didReceiveApplicationContext:(nonnull NSDictionary<NSString *,id> *)applicationContext
+{
+    // Handle application context dictionary
+    dispatch_async(dispatch_get_main_queue(), ^{
+        //Handle UI operations.
+    });
+}
+```
+**NOTE:** All delegate methods of this framework will call in secondary thread, if you have any UI operations, you need to use dispatch_async with mainQueue.
+
+**Userinfo transfer**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This is similar to application context, but the only difference is, it will transfer multiple set of content by queue up them. It is very usefull to do some userinfo inmemory data transfer. For example, take some of the best fitness & health related apps like Nike+ Running, Hello heart & Map my run. These apps will collect some data related to user from watch and show the progress in iPhone app by graphical representation. In this case you can use userinfoTransfer to send multiple set of userinfo data like running time, heart beat data, walking time etc to iPhone app.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Use **transferUserInfo:** to send userinfo, WCSession will store it in Outstanding userInfo tranfers Queue. This api will return an object of **WCSessionUserInfoTransfer** class.
+
+``` objc
+// Sender side code
+-(void)sendTheUserinfo
+{
+    NSDictionary *userInfo = @{}; // Create dictionary of userInfo
+    WCSessionUserInfoTransfer *userInfoTransfer = [[WCSession defaultSession] transferUserInfo:userInfo];
+}
+```
+WCSessionUserInfoTransfer class will give ability to fetch the userinfo, cancel the transfer & to check whether transferring is happening. If you want to cancel any one of the userinfo transfer, then use below api to 
+get list of current non-transfer userinfo which are stored in Outstanding userInfo tranfers Queue and cancel the transfer.
+
+``` objc
+// Will get list of WCSessionUserInfoTransfer objects.
+NSArray<WCSessionUserInfoTransfer *> *transfers = [[WCSession defaultSession] outstandingUserInfoTransfers];
+```
+
+System will transfer one by one userinfo content to receiver app and will intimate to receiver by invoking below delegate method.
+
+``` objc
+// Receiver side delegate method to handle the userinfo.Will be called on startup if the user info finished transferring when the receiver was not running.
+-(void)session:(nonnull WCSession *)session didReceiveUserInfo:(nonnull NSDictionary<NSString *,id> *)userInfo
+{
+    // Handle incoming user info dictionary
+    dispatch_async(dispatch_get_main_queue(), ^{
+        //Handle UI operations.
+    });
+}
+
+// Called on sending side when a data transfer operation finished successfully or because of an error.
+- (void)session:(WCSession * __nonnull)session didFinishUserInfoTransfer:(WCSessionUserInfoTransfer *)userInfoTransfer error:(nullable NSError *)error
+{
+}
+```
+
+**File Transfer**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This is similar to userinfo transfer, instead of userinfo dictionary, you will be transfering files. For example consider you have an iPhone app, where you have list of photos, 
+which you can edit & morph etc and you want to show the photos in watch app always updated. In this case you can use file transfer to transfer multiple image files with some metadata as well. All the files transfered 
+will be queue up into Outstanding File Transfers queue and system will transfer them based on conditions and store them in **~/Documents/Inbox/** path at receiver side app. Based on file size, transfer may take time.
+
+``` objc
+// Sender side code to transfer file
+-(void)transferUpdatedImage
+{   
+    NSURL *url = // Retrieve local stored URL of file
+    NSDictionary *metadata = // Create dictionary of metadata
+    WCSessionFileTransfer *fileTransfer = [[WCSession defaultSession] transferFile:url metadata:metadata];
+}
+```
+If you want to cancel any one of the file transfer, then use below api to get list of current non-transfer files which are stored in Outstanding file tranfers Queue and cancel the transfer.
+
+``` objc
+// Will get list of WCSessionUserInfoTransfer objects.
+NSArray<WCSessionFileTransfer *> *transfers = [[WCSession defaultSession] outstandingFileTransfers];
+```
+System will transfer one by one file to receiver app and will intimate to receiver by invoking below delegate method.
+
+``` objc
+// Called on the delegate of the receiver. Will be called on startup if the file finished transferring when the receiver was not running.
+- (void)session:(WCSession *)session didReceiveFile:(WCSessionFile *)file
+{
+    // Handle incoming files
+    dispatch_async(dispatch_get_main_queue(), ^{
+        //Handle UI operations.
+    });
+}
+
+// Called on the sending side after the file transfer has successfully completed or failed with an error. Will be called on next launch if the sender was not running when the transfer finished.
+- (void)session:(WCSession *)session didFinishFileTransfer:(WCSessionFileTransfer *)fileTransfer error:(nullable NSError *)error
+{
+}
+```
+The incoming file will be located in the Documents/Inbox/ folder when being delivered. The receiver must take ownership of the file by moving it to another location. The system will remove any content that has not been
+moved when this delegate method returns.
+
+###**2) Interactive messaging**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The interactive messaging is meant for live communciation, where both apps are running and communicate back & forth. Before sending message you need to check whether other app is available and required for messaging by using below api.
+
+``` objc
+[[WCSession defaultSession]reachable];
+```
+The reachable property will be true based on conditions differently in iPhone & watch like below.   
+**Iphone:**  
+1) Devices should connect   
+2) watch app should in foreground. 
+
+**Apple watch:**     
+1) Devices should connect   
+2) Even though you are invoking from watch app, there may be cases where watch extension will be in background. So, watch app should be in foreground.  
+3) No need of iPhone app should run in foreground, system will automatically open the iPhone app in background.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There are two types of interactive messaging. One is sending a dictionary as a message or sending data as a message. The data can be custom or serialized data.
+
+``` objc
+-(void)sendMessage
+{
+    if ([[WCSession defaultSession]reachable] == YES)
+    {
+        // Sending a dictionary as message
+
+        NSDictionary *message = // Create dictionary of content
+        [[WCSession defaultSession] sendMessage:message replyHandler:^(NSDictionary<NSString *,id> * __nonnull replyMessage) {
+            // Handle reply
+        } errorHandler:^(NSError * __nonnull error) {
+            // Handle error
+        }]
+
+
+        // Sending a data as message
+
+        NSData * data = // get your content data.
+        [[WCSession defaultSession] sendMessageData:data replyHandler:^(NSData * __nonnull replyMessageData) {
+            // Handle reply
+        } errorHandler:^(NSError * __nonnull error) {
+            // Handle error
+        }
+    }
+}
+```
+Reply handler is optional. So, based on the replyhandler two different delegate methods will invoke at receiver side.
+
+``` objc
+// Delegate invoke, if reply handler is not passed.
+-(void)session:(nonnull WCSession *)session didReceiveMessageData:(nonnull NSData *)messageData
+{
+    // Handle message
+}
+
+// Delegate invoke, if reply handler is  passed.
+-(void)session:(nonnull WCSession *)session didReceiveMessageData:(nonnull NSData *)messageData replyHandler:(nonnull void (^)(NSData * __nonnull))replyHandler
+{
+    // Handle message, return reply
+}
+```
+
+These are differnt ways of communication between iPhone and apple watch app. 
