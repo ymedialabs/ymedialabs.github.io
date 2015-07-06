@@ -41,6 +41,7 @@ self.animatinglayer.path = initialPath.CGPath;
 once we have the shape and the initial path all we need are the array of paths for key frame animation
 
 **Create a Initial BezierPath and assign it to the above layer above**
+
 ```objc
 - (NSArray *)keyframePathsWithDuration:(CGFloat)duration lastUpdatedAngle:(CGFloat)lastUpdatedAngle newAngle:(CGFloat)newAngle radius:(CGFloat)radius type:(RMIndicatorType)type
 {
