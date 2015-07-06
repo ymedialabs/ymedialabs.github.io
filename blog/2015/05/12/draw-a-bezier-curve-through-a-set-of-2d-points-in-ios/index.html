@@ -160,33 +160,60 @@
 
 <h2>ObjC Pseudo Code</h2>
 
-<pre><code>NSMutableArray *points = [[NSMutableArray alloc] init];
-//populate points with CGPoint
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'><span class="c1">//populate points with CGPoint</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">derivative</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSInteger</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MAX</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)];</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">next</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MIN</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">)];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">derivative</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">next</span> <span class="o">-</span> <span class="n">prev</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
+</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSUInteger</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">endPoint</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span> <span class="n">derivative</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">derivatives</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addCurveToPoint</span><span class="p">:</span><span class="n">endPoint</span> <span class="nl">controlPoint1</span><span class="p">:</span><span class="n">cp1</span> <span class="nl">controlPoint2</span><span class="p">:</span><span class="n">cp2</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">return</span> <span class="n">path</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
 
-NSMutableArray *derivative = [[NSMutableArray alloc] init];
-
-for(NSInteger j=0;j&lt;points.count;j++) {
-    CGPoint prev = points[MAX(j-1,0)];
-    CGPoint next = points[MIN(j+1,points.count-1)];
-
-    derivative[j] = (next - prev) / 2;
-}
-
-UIBezierPath *path = [UIBezierPath bezierPath];
-for(NSUInteger i=0;i&lt;points.count;i++) {
-    if(i==0) {
-        [path moveToPoint:points[i]]
-    } else {
-        CGPoint endPoint = points[i];
-        CGPoint cp1 = points[i-1]+ derivative[i-1]/tension;
-        CGPoint cp2 = points[i] + derivatives[i]/tension;
-
-        [path addCurveToPoint:endPoint controlPoint1:cp1 controlPoint2:cp2];
-    }
-}
-
-return path;
-</code></pre>
 
 <h2>Code</h2>
 
@@ -247,19 +274,23 @@ return path;
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve Through a Set of 2D Points in iOS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/11/lets-roll/">Lets Roll!</a>
       </li>
     
   </ul>

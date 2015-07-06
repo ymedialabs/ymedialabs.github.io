@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Communication Between Apple Watch With New WatchOS-2 and iPhone - YMediaLabs Engineering Blog</title>
+  <meta name="author" content="YMediaLabs">
+
+  
+  <meta name="description" content="In Watch OS 2, apple moved the watch extension bundle &amp; data source to watch itself, previously it was in iPhone only. No more &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="YMediaLabs Engineering Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">YMediaLabs Engineering Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="ymedialabs.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Communication Between Apple Watch With New WatchOS-2 and iPhone</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-07-03T10:46:36+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2015</span></span> <span class='time'>10:46 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In Watch OS 2, apple moved the watch extension bundle &amp; data source to watch itself, previously it was in iPhone only. No more <strong>openParentApplication:</strong> api call, <strong>CFNotificationCenterGetDarwinNotifyCenter</strong> &amp; <strong>sharedGroups</strong>. Apple itself given new framework for all sorts of communication named WatchConnectivity, supports for NSURLSession &amp; codedata.</p>
+
+<p>Before using WatchConnectivity framework, you need some setup. This will ensure that device and Watch OS are supported to use WatchConnectivity api&rsquo;s. It&rsquo;s worth to setup this at the earlier stage of your app like in iOS app appDelegate &amp; watch app extensionDelegate class, as becuase receiver app may need some data at early stage.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Always set your apps up to receive incoming WatchConnectivity content</span>
+</span><span class='line'><span class="k">if</span> <span class="p">([</span><span class="n">WCSession</span> <span class="n">isSupported</span><span class="p">])</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span> <span class="o">=</span> <span class="p">[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">];</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span> <span class="c1">// conforms to WCSessionDelegate</span>
+</span><span class='line'><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">session</span> <span class="n">activateSession</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After activating the watchconnectivy session, you need to check whether your iPhone is paired with any watch device or not.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">paired</span> <span class="o">==</span> <span class="nb">false</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At first it will be false, as watch is not paired. Once iPhone pair with any watch device, iPhone app will get notify about the state change of pair by calling <strong>sessionWatchStateDidChange:</strong> delegare method, if iPhone app is running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sessionWatchStateDidChange:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>next step is watch app installation validation. If user install the watch app later after pairing, then iPhone app will get notify about the installion state change by invoking a above same delegare method, if iPhone app is running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Watch connectivity session delegate method</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sessionWatchStateDidChange:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">if</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">paired</span> <span class="o">=</span> <span class="nb">YES</span> <span class="o">&amp;&amp;</span> <span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">watchAppInstalled</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Implement need full task here.</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These validations are only for iPhone app, because doing this from watch app means it&rsquo;s already paired and installed. When ever watchAppInstalled become true, apple will create a directory in your container, few potins need to consider before storing some data in that container:</p>
+
+<ul>
+<li>Directory and its contents’ lifetime is tied to the watchAppInstalled property, it means when ever watch app uninstalled all content will get delete.</li>
+<li>As apple will clear all of your data while uninstalling the app or unpair the device. Store only the data relevant to the specific instance of your Watch app like</li>
+<li>Last queued item marker</li>
+<li>Preferences</li>
+<li>Files queued for transfer</li>
+</ul>
+
+
+<p>you can get that container path from the api.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">watchDirectoryURL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now you are good enough to communicate between both apps. Apple divided the communication into two categories:</p>
+
+<ul>
+<li>Background transfers</li>
+<li>Interactive messaging</li>
+</ul>
+
+
+<h3>1) Background transfers</h3>
+
+<p>This meant for content not needed immediately at receiver side, OS intelligently transfer the content. If
+container app contains some content and fetching some more content from server &amp; receiver app is not in active
+state, that means receiver not needed the content immediately. So, it will queue up content in system. And
+system will validate the right conditions intelligently to transfer the content across, like it will consider
+power, performance &amp; app state etc. System will transfer content, if conditions satisfied and then it will
+delivered to receiver app when it launches.It divided into three types:   <br/>
+1. Application context<br/>
+2. Userinfo transfer  <br/>
+3. file transfer</p>
+
+<h4>Application context</h4>
+
+<p>This will offer a single set of information to other side app. For example take FoodPanda iPhone application, which shows the restaurants based on your current of choosed
+location. If you want to show the set of restaurants in apple watch as well. Then store them in application context, when ever user launches the watch app the content will be there to show. There are two main
+properties <strong>applicationContext</strong> &amp; <strong>receivedApplicationContext</strong> which stores data(dictionary) in sender &amp; receiver apps respectively.</p>
+
+<p>FoodPanda iPhone app will call an api <strong>updateApplicationContext:</strong>, which will store the data in <strong>applicationContext</strong> property, if iPhone app pushing latest context before
+transfer, system will replace the existing data in <strong>applicationContext</strong> property. Always latest set of content will be there in applicationContext. And you can use this context to show subset of data in watch glance
+as well.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">updateTheLatestContext</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">context</span> <span class="o">=</span> <span class="c1">// Create context dictionary with latest state;</span>
+</span><span class='line'><span class="bp">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">updateApplicationContext</span><span class="p">:</span><span class="n">context</span> <span class="nl">error</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle any errors</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Receiver side delegate method to handle it.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveApplicationContext:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span><span class="p">)</span><span class="nv">applicationContext</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle application context dictionary</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>NOTE:</strong> All delegate methods of this framework will call in secondary thread, if you have any UI operations, you need to use dispatch_async with mainQueue.</p>
+
+<h4>Userinfo transfer</h4>
+
+<p>This is similar to application context, but the only difference is, it will transfer multiple set of content by queue up them. It is very usefull to do some userinfo inmemory data transfer. For example, take some of the best fitness &amp; health related apps like Nike+ Running, Hello heart &amp; Map my run. These apps will collect some data related to user from watch and show the progress in iPhone app by graphical representation. In this case you can use userinfoTransfer to send multiple set of userinfo data like running time, heart beat data, walking time etc to iPhone app.</p>
+
+<p>Use <strong>transferUserInfo:</strong> to send userinfo, WCSession will store it in Outstanding userInfo tranfers Queue. This api will return an object of <strong>WCSessionUserInfoTransfer</strong> class.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendTheUserinfo</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">userInfo</span> <span class="o">=</span> <span class="l">@{}</span><span class="p">;</span> <span class="c1">// Create dictionary of userInfo</span>
+</span><span class='line'><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*</span><span class="n">userInfoTransfer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">transferUserInfo</span><span class="p">:</span><span class="n">userInfo</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>WCSessionUserInfoTransfer class will give ability to fetch the userinfo, cancel the transfer &amp; to check whether transferring is happening. If you want to cancel any one of the userinfo transfer, then use
+<strong>outstandingUserInfoTransfers</strong> api to get list of current non-transfer userinfo&rsquo;s from queue and cancel the specific transfer.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Will get list of WCSessionUserInfoTransfer objects.</span>
+</span><span class='line'><span class="bp">NSArray</span><span class="o">&lt;</span><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">transfers</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="n">outstandingUserInfoTransfers</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>System will transfer one by one userinfo content to receiver app and will intimate to receiver by calling <strong>didReceiveUserInfo</strong> delegate method.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Receiver side delegate method to handle the userinfo.Will be called on startup if the user info finished transferring when the receiver was not running.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveUserInfo:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfo</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle incoming user info dictionary</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Called on sending side when a data transfer operation finished successfully or because of an error.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span> <span class="n">__nonnull</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didFinishUserInfoTransfer:</span><span class="p">(</span><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfoTransfer</span> <span class="nf">error:</span><span class="p">(</span><span class="n">nullable</span> <span class="bp">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>File Transfer</h4>
+
+<p>This is similar to userinfo transfer, instead of userinfo dictionary, you will be transfering files. For example consider you have an iPhone app, where you have list of photos,
+which you can edit &amp; morph etc and you want to show the photos in watch app always updated. In this case you can use file transfer to transfer multiple image files with some metadata as well. All the files transfered
+will be queue up into Outstanding File Transfers queue and system will transfer them based on conditions and store them in <strong>~/Documents/Inbox/</strong> path at receiver side app. Based on file size, transfer may take time.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code to transfer file</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">transferUpdatedImage</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSURL</span> <span class="o">*</span><span class="n">url</span> <span class="o">=</span> <span class="c1">// Retrieve local stored URL of file</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">metadata</span> <span class="o">=</span> <span class="c1">// Create dictionary of metadata</span>
+</span><span class='line'><span class="n">WCSessionFileTransfer</span> <span class="o">*</span><span class="n">fileTransfer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">transferFile</span><span class="p">:</span><span class="n">url</span> <span class="nl">metadata</span><span class="p">:</span><span class="n">metadata</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you want to cancel any one of the file transfer, then use <strong>outstandingFileTransfers</strong> api to get list of current non-transfer files from ueue and cancel the transfer.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Will get list of WCSessionUserInfoTransfer objects.</span>
+</span><span class='line'><span class="bp">NSArray</span><span class="o">&lt;</span><span class="n">WCSessionFileTransfer</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">transfers</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="n">outstandingFileTransfers</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>System will transfer one by one file to receiver app and will intimate to receiver by calling <strong>didReceiveFile</strong> delegate method.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Called on the delegate of the receiver. Will be called on startup if the file finished transferring when the receiver was not running.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveFile:</span><span class="p">(</span><span class="n">WCSessionFile</span> <span class="o">*</span><span class="p">)</span><span class="nv">file</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle incoming files</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Called on the sending side after the file transfer has successfully completed or failed with an error. Will be called on next launch if the sender was not running when the transfer finished.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didFinishFileTransfer:</span><span class="p">(</span><span class="n">WCSessionFileTransfer</span> <span class="o">*</span><span class="p">)</span><span class="nv">fileTransfer</span> <span class="nf">error:</span><span class="p">(</span><span class="n">nullable</span> <span class="bp">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The incoming file will be located in the Documents/Inbox/ folder when being delivered. The receiver must take ownership of the file by moving it to another location. The system will remove any content that has not been
+moved when this delegate method returns.</p>
+
+<h3>2) Interactive messaging</h3>
+
+<p>The interactive messaging is meant for live communciation, where both apps are running and communicate back &amp; forth. Before sending message you need to check whether other app is available and required for messaging by using the api.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span><span class="n">reachable</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The reachable property will be true based on different conditions. <br/>
+<strong>Iphone:</strong><br/>
+1) Devices should connect <br/>
+2) watch app should in foreground.</p>
+
+<p><strong>Apple watch:</strong>   <br/>
+1) Devices should connect <br/>
+2) Even though you are invoking from watch app, there may be cases where watch extension will be in background. So, watch app should be in foreground.<br/>
+3) No need of iPhone app should run in foreground, system will automatically open the iPhone app in background.</p>
+
+<p>There are two types of interactive messaging. One is sending a dictionary as a message or sending data as a message. The data can be custom or serialized data.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendMessage</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">if</span> <span class="p">([[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span><span class="n">reachable</span><span class="p">]</span> <span class="o">==</span> <span class="nb">YES</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Sending a dictionary as message</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">message</span> <span class="o">=</span> <span class="c1">// Create dictionary of content</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">sendMessage</span><span class="p">:</span><span class="n">message</span> <span class="nl">replyHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">replyMessage</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle reply</span>
+</span><span class='line'><span class="p">}</span> <span class="nl">errorHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSError</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle error</span>
+</span><span class='line'><span class="p">}]</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Sending a data as message</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSData</span> <span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="c1">// get your content data.</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">sendMessageData</span><span class="p">:</span><span class="n">data</span> <span class="nl">replyHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSData</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">replyMessageData</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle reply</span>
+</span><span class='line'><span class="p">}</span> <span class="nl">errorHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSError</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle error</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Reply handler is optional. So, based on the replyhandler two different delegate methods will invoke at receiver side.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Delegate invoke, if reply handler is not passed.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveMessageData:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">messageData</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle message</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Delegate invoke, if reply handler is  passed.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveMessageData:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">messageData</span> <span class="nf">replyHandler:</span><span class="p">(</span><span class="n">nonnull</span> <span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="bp">NSData</span> <span class="o">*</span> <span class="n">__nonnull</span><span class="p">))</span><span class="nv">replyHandler</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle message, return reply</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These are the different ways of communication between iPhone and apple watch app.</p>
+
+<p>Find out the details of Communication between WatchOS 1 and iOS here
+<a href="/blog/2015/06/30/apple-watch-connectivity/">WacthOS1</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Karthik Mitta</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-07-03T10:46:36+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2015</span></span> <span class='time'>10:46 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/" data-via="ymedialabs" data-counturl="http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/06/30/apple-watch-connectivity/" title="Previous Post: How do we communicate between Watch and iPhone App ?">&laquo; How do we communicate between Watch and iPhone App ?</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - YMediaLabs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

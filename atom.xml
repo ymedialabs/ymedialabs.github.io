@@ -4,7 +4,7 @@
   <title><![CDATA[YMediaLabs Engineering Blog]]></title>
   <link href="http://ymedialabs.github.io/atom.xml" rel="self"/>
   <link href="http://ymedialabs.github.io/"/>
-  <updated>2015-05-25T18:00:25+05:30</updated>
+  <updated>2015-07-06T16:37:54+05:30</updated>
   <id>http://ymedialabs.github.io/</id>
   <author>
     <name><![CDATA[YMediaLabs]]></name>
@@ -12,6 +12,766 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Communication Between Apple Watch With New WatchOS-2 and iPhone]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/"/>
+    <updated>2015-07-03T10:46:36+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2</id>
+    <content type="html"><![CDATA[<p>In Watch OS 2, apple moved the watch extension bundle &amp; data source to watch itself, previously it was in iPhone only. No more <strong>openParentApplication:</strong> api call, <strong>CFNotificationCenterGetDarwinNotifyCenter</strong> &amp; <strong>sharedGroups</strong>. Apple itself given new framework for all sorts of communication named WatchConnectivity, supports for NSURLSession &amp; codedata.</p>
+
+<p>Before using WatchConnectivity framework, you need some setup. This will ensure that device and Watch OS are supported to use WatchConnectivity api&rsquo;s. It&rsquo;s worth to setup this at the earlier stage of your app like in iOS app appDelegate &amp; watch app extensionDelegate class, as becuase receiver app may need some data at early stage.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Always set your apps up to receive incoming WatchConnectivity content</span>
+</span><span class='line'><span class="k">if</span> <span class="p">([</span><span class="n">WCSession</span> <span class="n">isSupported</span><span class="p">])</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span> <span class="o">=</span> <span class="p">[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">];</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span> <span class="c1">// conforms to WCSessionDelegate</span>
+</span><span class='line'><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">session</span> <span class="n">activateSession</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After activating the watchconnectivy session, you need to check whether your iPhone is paired with any watch device or not.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">paired</span> <span class="o">==</span> <span class="nb">false</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At first it will be false, as watch is not paired. Once iPhone pair with any watch device, iPhone app will get notify about the state change of pair by calling <strong>sessionWatchStateDidChange:</strong> delegare method, if iPhone app is running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sessionWatchStateDidChange:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>next step is watch app installation validation. If user install the watch app later after pairing, then iPhone app will get notify about the installion state change by invoking a above same delegare method, if iPhone app is running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Watch connectivity session delegate method</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sessionWatchStateDidChange:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">if</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">paired</span> <span class="o">=</span> <span class="nb">YES</span> <span class="o">&amp;&amp;</span> <span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">watchAppInstalled</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Implement need full task here.</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These validations are only for iPhone app, because doing this from watch app means it&rsquo;s already paired and installed. When ever watchAppInstalled become true, apple will create a directory in your container, few potins need to consider before storing some data in that container:</p>
+
+<ul>
+<li>Directory and its contents’ lifetime is tied to the watchAppInstalled property, it means when ever watch app uninstalled all content will get delete.</li>
+<li>As apple will clear all of your data while uninstalling the app or unpair the device. Store only the data relevant to the specific instance of your Watch app like</li>
+<li>Last queued item marker</li>
+<li>Preferences</li>
+<li>Files queued for transfer</li>
+</ul>
+
+
+<p>you can get that container path from the api.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">watchDirectoryURL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now you are good enough to communicate between both apps. Apple divided the communication into two categories:</p>
+
+<ul>
+<li>Background transfers</li>
+<li>Interactive messaging</li>
+</ul>
+
+
+<h3>1) Background transfers</h3>
+
+<p>This meant for content not needed immediately at receiver side, OS intelligently transfer the content. If
+container app contains some content and fetching some more content from server &amp; receiver app is not in active
+state, that means receiver not needed the content immediately. So, it will queue up content in system. And
+system will validate the right conditions intelligently to transfer the content across, like it will consider
+power, performance &amp; app state etc. System will transfer content, if conditions satisfied and then it will
+delivered to receiver app when it launches.It divided into three types:   <br/>
+1. Application context<br/>
+2. Userinfo transfer  <br/>
+3. file transfer</p>
+
+<h4>Application context</h4>
+
+<p>This will offer a single set of information to other side app. For example take FoodPanda iPhone application, which shows the restaurants based on your current of choosed
+location. If you want to show the set of restaurants in apple watch as well. Then store them in application context, when ever user launches the watch app the content will be there to show. There are two main
+properties <strong>applicationContext</strong> &amp; <strong>receivedApplicationContext</strong> which stores data(dictionary) in sender &amp; receiver apps respectively.</p>
+
+<p>FoodPanda iPhone app will call an api <strong>updateApplicationContext:</strong>, which will store the data in <strong>applicationContext</strong> property, if iPhone app pushing latest context before
+transfer, system will replace the existing data in <strong>applicationContext</strong> property. Always latest set of content will be there in applicationContext. And you can use this context to show subset of data in watch glance
+as well.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">updateTheLatestContext</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">context</span> <span class="o">=</span> <span class="c1">// Create context dictionary with latest state;</span>
+</span><span class='line'><span class="bp">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">updateApplicationContext</span><span class="p">:</span><span class="n">context</span> <span class="nl">error</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle any errors</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Receiver side delegate method to handle it.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveApplicationContext:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span><span class="p">)</span><span class="nv">applicationContext</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle application context dictionary</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>NOTE:</strong> All delegate methods of this framework will call in secondary thread, if you have any UI operations, you need to use dispatch_async with mainQueue.</p>
+
+<h4>Userinfo transfer</h4>
+
+<p>This is similar to application context, but the only difference is, it will transfer multiple set of content by queue up them. It is very usefull to do some userinfo inmemory data transfer. For example, take some of the best fitness &amp; health related apps like Nike+ Running, Hello heart &amp; Map my run. These apps will collect some data related to user from watch and show the progress in iPhone app by graphical representation. In this case you can use userinfoTransfer to send multiple set of userinfo data like running time, heart beat data, walking time etc to iPhone app.</p>
+
+<p>Use <strong>transferUserInfo:</strong> to send userinfo, WCSession will store it in Outstanding userInfo tranfers Queue. This api will return an object of <strong>WCSessionUserInfoTransfer</strong> class.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendTheUserinfo</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">userInfo</span> <span class="o">=</span> <span class="l">@{}</span><span class="p">;</span> <span class="c1">// Create dictionary of userInfo</span>
+</span><span class='line'><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*</span><span class="n">userInfoTransfer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">transferUserInfo</span><span class="p">:</span><span class="n">userInfo</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>WCSessionUserInfoTransfer class will give ability to fetch the userinfo, cancel the transfer &amp; to check whether transferring is happening. If you want to cancel any one of the userinfo transfer, then use
+<strong>outstandingUserInfoTransfers</strong> api to get list of current non-transfer userinfo&rsquo;s from queue and cancel the specific transfer.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Will get list of WCSessionUserInfoTransfer objects.</span>
+</span><span class='line'><span class="bp">NSArray</span><span class="o">&lt;</span><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">transfers</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="n">outstandingUserInfoTransfers</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>System will transfer one by one userinfo content to receiver app and will intimate to receiver by calling <strong>didReceiveUserInfo</strong> delegate method.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Receiver side delegate method to handle the userinfo.Will be called on startup if the user info finished transferring when the receiver was not running.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveUserInfo:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfo</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle incoming user info dictionary</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Called on sending side when a data transfer operation finished successfully or because of an error.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span> <span class="n">__nonnull</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didFinishUserInfoTransfer:</span><span class="p">(</span><span class="n">WCSessionUserInfoTransfer</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfoTransfer</span> <span class="nf">error:</span><span class="p">(</span><span class="n">nullable</span> <span class="bp">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>File Transfer</h4>
+
+<p>This is similar to userinfo transfer, instead of userinfo dictionary, you will be transfering files. For example consider you have an iPhone app, where you have list of photos,
+which you can edit &amp; morph etc and you want to show the photos in watch app always updated. In this case you can use file transfer to transfer multiple image files with some metadata as well. All the files transfered
+will be queue up into Outstanding File Transfers queue and system will transfer them based on conditions and store them in <strong>~/Documents/Inbox/</strong> path at receiver side app. Based on file size, transfer may take time.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sender side code to transfer file</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">transferUpdatedImage</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="bp">NSURL</span> <span class="o">*</span><span class="n">url</span> <span class="o">=</span> <span class="c1">// Retrieve local stored URL of file</span>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">metadata</span> <span class="o">=</span> <span class="c1">// Create dictionary of metadata</span>
+</span><span class='line'><span class="n">WCSessionFileTransfer</span> <span class="o">*</span><span class="n">fileTransfer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">transferFile</span><span class="p">:</span><span class="n">url</span> <span class="nl">metadata</span><span class="p">:</span><span class="n">metadata</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you want to cancel any one of the file transfer, then use <strong>outstandingFileTransfers</strong> api to get list of current non-transfer files from ueue and cancel the transfer.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Will get list of WCSessionUserInfoTransfer objects.</span>
+</span><span class='line'><span class="bp">NSArray</span><span class="o">&lt;</span><span class="n">WCSessionFileTransfer</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">transfers</span> <span class="o">=</span> <span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="n">outstandingFileTransfers</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>System will transfer one by one file to receiver app and will intimate to receiver by calling <strong>didReceiveFile</strong> delegate method.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Called on the delegate of the receiver. Will be called on startup if the file finished transferring when the receiver was not running.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveFile:</span><span class="p">(</span><span class="n">WCSessionFile</span> <span class="o">*</span><span class="p">)</span><span class="nv">file</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle incoming files</span>
+</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'><span class="c1">//Handle UI operations.</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Called on the sending side after the file transfer has successfully completed or failed with an error. Will be called on next launch if the sender was not running when the transfer finished.</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didFinishFileTransfer:</span><span class="p">(</span><span class="n">WCSessionFileTransfer</span> <span class="o">*</span><span class="p">)</span><span class="nv">fileTransfer</span> <span class="nf">error:</span><span class="p">(</span><span class="n">nullable</span> <span class="bp">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The incoming file will be located in the Documents/Inbox/ folder when being delivered. The receiver must take ownership of the file by moving it to another location. The system will remove any content that has not been
+moved when this delegate method returns.</p>
+
+<h3>2) Interactive messaging</h3>
+
+<p>The interactive messaging is meant for live communciation, where both apps are running and communicate back &amp; forth. Before sending message you need to check whether other app is available and required for messaging by using the api.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span><span class="n">reachable</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The reachable property will be true based on different conditions. <br/>
+<strong>Iphone:</strong><br/>
+1) Devices should connect <br/>
+2) watch app should in foreground.</p>
+
+<p><strong>Apple watch:</strong>   <br/>
+1) Devices should connect <br/>
+2) Even though you are invoking from watch app, there may be cases where watch extension will be in background. So, watch app should be in foreground.<br/>
+3) No need of iPhone app should run in foreground, system will automatically open the iPhone app in background.</p>
+
+<p>There are two types of interactive messaging. One is sending a dictionary as a message or sending data as a message. The data can be custom or serialized data.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendMessage</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">if</span> <span class="p">([[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span><span class="n">reachable</span><span class="p">]</span> <span class="o">==</span> <span class="nb">YES</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Sending a dictionary as message</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">message</span> <span class="o">=</span> <span class="c1">// Create dictionary of content</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">sendMessage</span><span class="p">:</span><span class="n">message</span> <span class="nl">replyHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSDictionary</span><span class="o">&lt;</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">,</span><span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">replyMessage</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle reply</span>
+</span><span class='line'><span class="p">}</span> <span class="nl">errorHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSError</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle error</span>
+</span><span class='line'><span class="p">}]</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Sending a data as message</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSData</span> <span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="c1">// get your content data.</span>
+</span><span class='line'><span class="p">[[</span><span class="n">WCSession</span> <span class="n">defaultSession</span><span class="p">]</span> <span class="nl">sendMessageData</span><span class="p">:</span><span class="n">data</span> <span class="nl">replyHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSData</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">replyMessageData</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle reply</span>
+</span><span class='line'><span class="p">}</span> <span class="nl">errorHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSError</span> <span class="o">*</span> <span class="n">__nonnull</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle error</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Reply handler is optional. So, based on the replyhandler two different delegate methods will invoke at receiver side.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Delegate invoke, if reply handler is not passed.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveMessageData:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">messageData</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle message</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Delegate invoke, if reply handler is  passed.</span>
+</span><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">session:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">WCSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span> <span class="nf">didReceiveMessageData:</span><span class="p">(</span><span class="n">nonnull</span> <span class="bp">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">messageData</span> <span class="nf">replyHandler:</span><span class="p">(</span><span class="n">nonnull</span> <span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="bp">NSData</span> <span class="o">*</span> <span class="n">__nonnull</span><span class="p">))</span><span class="nv">replyHandler</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="c1">// Handle message, return reply</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These are the different ways of communication between iPhone and apple watch app.</p>
+
+<p>Find out the details of Communication between WatchOS 1 and iOS here
+<a href="http://ymedialabs.github.io/blog/2015/06/30/apple-watch-connectivity/">WacthOS1</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[How Do We Communicate Between Watch and iPhone App ?]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/06/30/apple-watch-connectivity/"/>
+    <updated>2015-06-30T13:11:39+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/06/30/apple-watch-connectivity</id>
+    <content type="html"><![CDATA[<p>Apple Watch uses Wi-Fi and Bluetooth to communicate with your paired iPhone, switching between connections as needed:</p>
+
+<ul>
+<li>Apple Watch uses Bluetooth when your iPhone is near, which conserves power.</li>
+<li>If Bluetooth isn’t available, Apple Watch will try to use Wi-Fi. For example, if compatible Wi-Fi is available and your iPhone isn&rsquo;t in Bluetooth range,Apple Watch uses Wi-Fi.</li>
+</ul>
+
+
+<center><img src="http://ymedialabs.github.io/images/posts/2015-06-30/Distance-between-iPhone-and-Apple-Watch.jpg" align="center" width="400" height="200" /></center>
+
+
+<p>For pairing iPhone and apple watch, you need to enable Wi-Fi and Bluetooth
+on your paired iPhone. Apple Watch compatible with Wi-Fi 802.11b/g and Bluetooth 4.0.</p>
+
+<p>The communication process between both devices is entirely different in watchOS 2 compared from watchOS 1. In this article, I am going to explain in detail, that how communication works in both OS versions.</p>
+
+<h3><u>WatchOS 1:</u></h3>
+
+<p>The basic communiation types are:<br/>
+1. Message transfer.  <br/>
+2. Sharing Data or files with Your Containing iOS App.</p>
+
+<h3>Message transfer:</h3>
+
+<p>It&rsquo;s a way to communicate directly from watch to iPhone app and get reply back, using <strong>openParentApplication:</strong> communication API in watch kit framework.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">openParentApplication:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span> <span class="n">nonnull</span><span class="p">)</span><span class="nv">userInfo</span> <span class="nf">reply:</span><span class="p">(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span> <span class="n">nullable</span><span class="p">)(</span><span class="bp">NSDictionary</span> <span class="o">*</span> <span class="n">nonnull</span> <span class="n">replyInfo</span><span class="p">,</span> <span class="bp">NSError</span> <span class="o">*</span> <span class="n">nullable</span> <span class="n">error</span><span class="p">))</span><span class="nv">reply</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>userInfo:  A dictionary containing data to pass to the iOS app. Use this dictionary to pass
+information to the iOS app so that it can perform any needed tasks. The contents of the dictionary must be
+serializable to a property list file. This parameter must not be nil.</p>
+
+<p>reply:  It&rsquo;s a block with response data (NSDictionary) &amp; error object for the request send by watch app.</p>
+
+<p>This api belongs to <strong>WKInterfaceController</strong> class, as because every interface controller in watch extension may need to communicate parent iOS app at certain time. If iPhone app is not running, then this api call will wake up the app in background and do the needful.</p>
+
+<p>The otherside in iPhone app, the <strong>handleWatchKitExtensionRequest:</strong> delegate method will get called in appDelegate.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">application:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span> <span class="nf">handleWatchKitExtensionRequest:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfo</span> <span class="nf">reply:</span><span class="p">(</span><span class="kt">void</span><span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">replyInfo</span><span class="p">))</span><span class="nv">reply</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Usage</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Method in apple watch app</span>
+</span><span class='line'><span class="p">-(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nf">getTheiPhoneAppStatus</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSInteger</span> <span class="n">loginStatus</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">WKInterfaceController</span> <span class="nl">openParentApplication</span><span class="p">:</span><span class="l">@{</span><span class="s">@&quot;requestType&quot;</span><span class="o">:</span><span class="s">@&quot;getLoginStatus&quot;</span><span class="l">}</span> <span class="nl">reply</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">replyInfo</span><span class="p">,</span> <span class="bp">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">error</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;Error %@&quot;</span><span class="p">,</span><span class="n">error</span><span class="p">.</span><span class="n">localizedDescription</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">replyInfo</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="n">loginStatus</span> <span class="o">=</span> <span class="p">[[</span><span class="n">replyInfo</span> <span class="nl">valueForKey</span><span class="p">:</span><span class="s">@&quot;loginStatus&quot;</span><span class="p">]</span> <span class="n">integerValue</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}];</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">loginStatus</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Delegate method in iPhone app</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">application:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span> <span class="nf">handleWatchKitExtensionRequest:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">userInfo</span> <span class="nf">reply:</span><span class="p">(</span><span class="kt">void</span><span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">replyInfo</span><span class="p">))</span><span class="nv">reply</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">responseDict</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">requestType</span> <span class="o">=</span> <span class="p">[</span><span class="n">userInfo</span> <span class="nl">valueForKey</span><span class="p">:</span><span class="s">@&quot;requestType&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">([</span><span class="n">requestType</span> <span class="nl">isEqualToString</span><span class="p">:</span><span class="s">@&quot;getLoginStatus&quot;</span><span class="p">])</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">responseDict</span> <span class="o">=</span> <span class="l">@{</span><span class="s">@&quot;loginStatus&quot;</span><span class="o">:</span><span class="p">[</span><span class="bp">NSNumber</span> <span class="nl">numberWithInteger</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">loginStatus</span><span class="p">]</span><span class="l">}</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="n">reply</span><span class="p">(</span><span class="n">responseDict</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>By using above api, a watch app can communicate with iPhone app. But to communicate from iPhone to watch, there is no direct api provided by apple. For that you need to
+use notification center. NSNotificationCenter API&rsquo;s will work only in same bundle. As you know, iPhone &amp; watch app are two differnt bundles, you can use corefoundation framework api <strong>CFNotificationCenterGetDarwinNotifyCenter</strong> to send notification from iphone to watch app &amp; viceversa.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Posting notification</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendNotificationForMessageWithIdentifier:</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">identifier</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterRef</span> <span class="k">const</span> <span class="n">Notificationcenter</span> <span class="o">=</span> <span class="n">CFNotificationCenterGetDarwinNotifyCenter</span><span class="p">();</span>
+</span><span class='line'>    <span class="n">CFDictionaryRef</span> <span class="k">const</span> <span class="n">userInfo</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">BOOL</span> <span class="k">const</span> <span class="n">deliverImmediately</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">str</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="n">CFStringRef</span><span class="p">)</span><span class="n">identifier</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterPostNotification</span><span class="p">(</span><span class="n">Notificationcenter</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">userInfo</span><span class="p">,</span> <span class="n">deliverImmediately</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>like NSNotificationCenter you need to add &amp; remove observer.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">registerNotificationsWithIdentifier:</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">identifier</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterRef</span> <span class="k">const</span> <span class="n">center</span> <span class="o">=</span> <span class="n">CFNotificationCenterGetDarwinNotifyCenter</span><span class="p">();</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">str</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="n">CFStringRef</span><span class="p">)</span><span class="n">identifier</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterAddObserver</span><span class="p">(</span><span class="n">center</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">__bridge</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="nb">self</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">WatchNotificationCallback</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">str</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">CFNotificationSuspensionBehaviorDeliverImmediately</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">unregisterNotificationsWithIdentifier:</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">identifier</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterRef</span> <span class="k">const</span> <span class="n">center</span> <span class="o">=</span> <span class="n">CFNotificationCenterGetDarwinNotifyCenter</span><span class="p">();</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">str</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="n">CFStringRef</span><span class="p">)</span><span class="n">identifier</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNotificationCenterRemoveObserver</span><span class="p">(</span><span class="n">center</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">__bridge</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="nb">self</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">str</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">WatchNotificationCallback</span><span class="p">(</span><span class="n">CFNotificationCenterRef</span> <span class="n">center</span><span class="p">,</span>
+</span><span class='line'><span class="kt">void</span> <span class="o">*</span> <span class="n">observer</span><span class="p">,</span>
+</span><span class='line'><span class="n">CFStringRef</span> <span class="n">name</span><span class="p">,</span>
+</span><span class='line'><span class="kt">void</span> <span class="k">const</span> <span class="o">*</span> <span class="n">object</span><span class="p">,</span>
+</span><span class='line'><span class="n">CFDictionaryRef</span> <span class="n">userInfo</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">identifier</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="n">name</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">postNotificationName</span><span class="p">:</span><span class="s">@&quot;WatchDataSynNotificationName&quot;</span>
+</span><span class='line'>    <span class="nl">object</span><span class="p">:</span><span class="nb">nil</span>
+</span><span class='line'>    <span class="nl">userInfo</span><span class="p">:</span><span class="l">@{</span><span class="s">@&quot;WatchIdentifier&quot;</span> <span class="o">:</span> <span class="n">identifier</span><span class="l">}</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>in order to handle the above notifications, app should be in active state.</p>
+
+<h3>Sharing Data or files with Your Containing iOS App :</h3>
+
+<p>In order to transfer data/files between watch &amp; iPhone app, use a shared app group to store that data. An app group is a secure container that multiple processes can access. Because your WatchKit extension and iOS app run in separate sandbox environments, they normally do not share files or communicate directly with one another. An app group lets the two processes share files or user defaults.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Sharing files</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nf">getSharedDirectoryPath</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSURL</span> <span class="o">*</span><span class="n">appGroupContainer</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">fileManager</span> <span class="nl">containerURLForSecurityApplicationGroupIdentifier</span><span class="p">:</span><span class="s">@&quot;&quot;</span><span class="n">group</span><span class="p">.</span><span class="n">com</span><span class="p">.</span><span class="n">companyname</span><span class="p">.</span><span class="n">productname</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">appGroupContainerPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">appGroupContainer</span> <span class="n">path</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">directoryPath</span> <span class="o">=</span> <span class="n">appGroupContainerPath</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">dirName</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">directoryPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">appGroupContainerPath</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">dirName</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">fileManager</span> <span class="nl">createDirectoryAtPath</span><span class="p">:</span><span class="n">directoryPath</span> <span class="nl">withIntermediateDirectories</span><span class="p">:</span><span class="nb">YES</span> <span class="nl">attributes</span><span class="p">:</span><span class="nb">nil</span> <span class="nl">error</span><span class="p">:</span><span class="nb">NULL</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">directoryPath</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Shared Userdefaults</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">storeDataInSharedDefaults:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">data</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSUserDefaults</span> <span class="o">*</span><span class="n">sharedUserDefaults</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSUserDefaults</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithSuiteName</span><span class="p">:</span><span class="s">@&quot;group.com.companyname.productname&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">sharedUserDefaults</span> <span class="nl">setObject</span><span class="p">:</span><span class="n">data</span> <span class="nl">forKey</span><span class="p">:</span><span class="s">@&quot;watchIdentifier&quot;</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After storing the data in shared container, use <strong>openParentApplication:</strong> api or <strong>CFNotificationCenterGetDarwinNotifyCenter</strong> to notify the receiver app for access data.</p>
+
+<p>Find out the details of Communication between new WatchOS 2 and iOS here
+<a href="http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/">WacthOS2</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Symbolicating Crashes Now Made Easy]]></title>
+    <link href="http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/"/>
+    <updated>2015-06-19T09:30:15+05:30</updated>
+    <id>http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy</id>
+    <content type="html"><![CDATA[<h3>About dSYM</h3>
+
+<p>If you have issues with symbolicating crashes in iOS by dragging the .crash file into the organiser tab, there is a <code>symbolicatecrash.pl</code> script provide by Xcode as well as <code>atos</code> tool to symbolicate the crash and a memory reference respectively. The script allows us to symbolicate the whole crash file where as using atos we can symbolicate single memory reference.</p>
+
+<p>Just for posterity when Xcode is building the application lldb debugger copies the symbols and the memory print to .dSYM debug symbol file. This file is created every time the application is built and no two .dSYM files are the same. This is the reason the crash is symbolicated on the machine on which the version of the application was built.</p>
+
+<h3>Using dSYM for symbolicating crashes</h3>
+
+<p>To symbolicate a crash file you need the original .dSYM file for that build. Xcode comes with a build in perl script to symbolicate the crash file using the .dSYM file.To do this we need to open terminal, set up an env variable DEVELOPER_DIR and add an alias to &lsquo;symbolicatecrash.pl&rsquo; script.</p>
+
+<h3>symbolication project (A Xcode plugin)</h3>
+
+<p>Symbolication project enables <em>symbolication-plugin</em> an Xcode plugin. This plugin is available in Product menu and is named <code>Symbolicate</code>. This is now available on <a href="https://github.com/ymedialabs/symbolication-plugin">YML Github Account</a>.</p>
+
+<ul>
+<li>Symbolicate Plugin is used to symbolicate crashes. If <code>dSYM file</code> and  <code>crash file</code> is available, the crash can be symbolicated using the Plugin.</li>
+<li>1.0 (0.1)</li>
+</ul>
+
+
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/product_menu.png" title="Produce Menu" alt="Product Menu" /></p>
+
+<h3>How do I get set up?</h3>
+
+<ul>
+<li>Open the SymbolicationPlugin project</li>
+<li>cmd + k (clean the project)</li>
+<li>cmd + b (build the project)</li>
+<li>ta-da! the plugin is installed</li>
+</ul>
+
+
+<h3>How to check if the plugin is installed</h3>
+
+<ul>
+<li>Open Terminal</li>
+<li>Navigate to ~/Library/Application Support/Developer/Shared/Xcode/Plug-ins directory</li>
+<li>Type ls -l</li>
+<li><code>SymbolicationPlugin.xcplugin</code> should be listed in the installed plug-in&rsquo;s list.</li>
+</ul>
+
+
+<h3>Requirements</h3>
+
+<p>To use the complete features of the Plugin the following files are required.</p>
+
+<ul>
+<li>The application bundle (application.app file).</li>
+<li>The dSYM file associated with the build.</li>
+<li>The application unix executable file for the available inside the application.app bundle (application.app/application).</li>
+</ul>
+
+
+<h3>How to use the Plugin?</h3>
+
+<p>Below are the details of using the three sections of the plugin <code>Symbolicate</code>, <code>Details</code> and <code>Memory</code></p>
+
+<h4>Symbolicating crash file</h4>
+
+<p>Use the <code>Symbolicate</code> tab to symbolicate the crash log.</p>
+
+<ul>
+<li>Select the dSYM file from the disk.</li>
+<li>Select the the crash file from the disk.</li>
+<li>Select Symbolicate. The plugin begins symbolicating the crash.</li>
+</ul>
+
+
+<p>Note: Additionally you can save the crash file by clicking at the down arrow at the bottom left of the screen.</p>
+
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Symbolicate_screen.png" title="Symbolicate Section" alt="Symbolicate" /></p>
+
+<h4>Checking the application details</h4>
+
+<p>Used the <code>Details</code> tab to get the build information.</p>
+
+<ul>
+<li>Select the application executable file (Unix executable file) available inside the application.app bundle (application.app/application).</li>
+<li>The details of the application like the build UUID, the build architecture is displayed.</li>
+</ul>
+
+
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Details_screen.png" title="Details Section" alt="Details" /></p>
+
+<h4>Symbolicating memory references available in the crash file</h4>
+
+<p>Used the <code>Memory</code> tab to symbolicate memory references</p>
+
+<ul>
+<li>Select the application executable file (Unix executable file) available inside the application.app bundle (application.app/application).</li>
+<li>List down the memory addresses a single space saperated list.</li>
+<li>Select the architecture (This can be found using the above &lsquo;Details&rsquo; section).</li>
+<li>Select Symbolicate. The Plugin displayes the symbolicated memory reference.</li>
+</ul>
+
+
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Memory_screen.png" title="Memory Section" alt="Memory" /></p>
+
+<p>This is now also available on <a href="http://alcatraz.io">Alcatraz Package Manager</a> for Xcode.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Possible Abuse of Dispatch_after]]></title>
@@ -70,12 +830,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>self.animatinglayer <span class="o">=</span> <span class="o">[</span>CAShapeLayer layer<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>self.animatingLayer.strokeColor <span class="o">=</span> &lt;<span class="c">#stroke color#&gt;;</span>
-</span><span class='line'>self.animatingLayer.fillColor <span class="o">=</span> &lt;<span class="c">#fill color#&gt;;</span>
-</span><span class='line'>self.animatingLayer.lineWidth <span class="o">=</span> &lt;<span class="c">#line width#&gt;;</span>
-</span><span class='line'>self.animatingLayer.frame <span class="o">=</span> self.bounds<span class="p">;</span>
-</span><span class='line'><span class="o">[</span>self.layer addSublayer:self.animatingLayer<span class="o">]</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatinglayer</span> <span class="o">=</span> <span class="p">[</span><span class="bp">CAShapeLayer</span> <span class="n">layer</span><span class="p">];</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">strokeColor</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">stroke</span> <span class="n">color</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">fillColor</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">fill</span> <span class="n">color</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">lineWidth</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">line</span> <span class="n">width</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">;</span>
+</span><span class='line'><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">layer</span> <span class="nl">addSublayer</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">];</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -91,16 +851,16 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>UIBezierPath *initialPath <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span> //empty path
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">initialPath</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span> <span class="c1">//empty path</span>
 </span><span class='line'>
-</span><span class='line'>// get the radius of the inner path
-</span><span class='line'>CGFloat <span class="nv">radius</span> <span class="o">=</span> MIN<span class="o">(</span>CGRectGetWidth<span class="o">(</span>self.bounds<span class="o">)</span>, CGRectGetHeight<span class="o">(</span>self.bounds<span class="o">))</span>/2<span class="p">;</span>
+</span><span class='line'><span class="c1">// get the radius of the inner path</span>
+</span><span class='line'><span class="n">CGFloat</span> <span class="n">radius</span> <span class="o">=</span> <span class="n">MIN</span><span class="p">(</span><span class="n">CGRectGetWidth</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">),</span> <span class="n">CGRectGetHeight</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
 </span><span class='line'>
-</span><span class='line'>// add the arc
-</span><span class='line'><span class="o">[</span>initialPath addArcWithCenter:center radius:radius startAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> endAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> clockwise:YES<span class="o">]</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// add the arc</span>
+</span><span class='line'><span class="p">[</span><span class="n">initialPath</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span> <span class="nl">clockwise</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
 </span><span class='line'>
-</span><span class='line'>// <span class="nb">set </span>the path
-</span><span class='line'>self.animatinglayer.path <span class="o">=</span> initialPath.CGPath<span class="p">;</span>
+</span><span class='line'><span class="c1">// set the path</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatinglayer</span><span class="p">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">initialPath</span><span class="p">.</span><span class="bp">CGPath</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -149,47 +909,47 @@
 <span class='line-number'>39</span>
 <span class='line-number'>40</span>
 <span class='line-number'>41</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>- <span class="o">(</span>NSArray *<span class="o">)</span>keyframePathsWithDuration:<span class="o">(</span>CGFloat<span class="o">)</span>duration lastUpdatedAngle:<span class="o">(</span>CGFloat<span class="o">)</span>lastUpdatedAngle newAngle:<span class="o">(</span>CGFloat<span class="o">)</span>newAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    NSUInteger <span class="nv">frameCount</span> <span class="o">=</span> ceil<span class="o">(</span>duration * 60<span class="o">)</span><span class="p">;</span>
-</span><span class='line'>    NSMutableArray *array <span class="o">=</span> <span class="o">[</span>NSMutableArray arrayWithCapacity:frameCount + 1<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">for</span> <span class="o">(</span>int <span class="nv">frame</span> <span class="o">=</span> 0<span class="p">;</span> frame &lt;<span class="o">=</span> frameCount<span class="p">;</span> frame++<span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        CGFloat <span class="nv">startAngle</span> <span class="o">=</span> degreeToRadian<span class="o">(</span>-90<span class="o">)</span><span class="p">;</span>
-</span><span class='line'>        CGFloat <span class="nv">endAngle</span> <span class="o">=</span> lastUpdatedAngle + <span class="o">(((</span>newAngle - lastUpdatedAngle<span class="o">)</span> * frame<span class="o">)</span> / frameCount<span class="o">)</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">keyframePathsWithDuration:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">duration</span> <span class="nf">lastUpdatedAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">lastUpdatedAngle</span> <span class="nf">newAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">newAngle</span> <span class="nf">radius:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">radius</span> <span class="nf">type:</span><span class="p">(</span><span class="n">RMIndicatorType</span><span class="p">)</span><span class="nv">type</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSUInteger</span> <span class="n">frameCount</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">duration</span> <span class="o">*</span> <span class="mi">60</span><span class="p">);</span>
+</span><span class='line'>    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableArray</span> <span class="nl">arrayWithCapacity</span><span class="p">:</span><span class="n">frameCount</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">frame</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">frame</span> <span class="o">&lt;=</span> <span class="n">frameCount</span><span class="p">;</span> <span class="n">frame</span><span class="o">++</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">CGFloat</span> <span class="n">startAngle</span> <span class="o">=</span> <span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">CGFloat</span> <span class="n">endAngle</span> <span class="o">=</span> <span class="n">lastUpdatedAngle</span> <span class="o">+</span> <span class="p">(((</span><span class="n">newAngle</span> <span class="o">-</span> <span class="n">lastUpdatedAngle</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame</span><span class="p">)</span> <span class="o">/</span> <span class="n">frameCount</span><span class="p">);</span>
 </span><span class='line'>
-</span><span class='line'>        <span class="o">[</span>array addObject:<span class="o">(</span>id<span class="o">)([</span>self pathWithStartAngle:startAngle endAngle:endAngle radius:radius <span class="nb">type</span>:type<span class="o">]</span>.CGPath<span class="o">)]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">array</span> <span class="nl">addObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)([</span><span class="nb">self</span> <span class="nl">pathWithStartAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">type</span><span class="p">:</span><span class="n">type</span><span class="p">].</span><span class="bp">CGPath</span><span class="p">)];</span>
+</span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">return</span> <span class="o">[</span>NSArray arrayWithArray:array<span class="o">]</span><span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">[</span><span class="bp">NSArray</span> <span class="nl">arrayWithArray</span><span class="p">:</span><span class="n">array</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>// Method to <span class="k">return</span> the bezier path with required start end angle and radius
-</span><span class='line'>- <span class="o">(</span>UIBezierPath *<span class="o">)</span>pathWithStartAngle:<span class="o">(</span>CGFloat<span class="o">)</span>startAngle endAngle:<span class="o">(</span>CGFloat<span class="o">)</span>endAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    BOOL <span class="nv">clockwise</span> <span class="o">=</span> startAngle &lt; endAngle<span class="p">;</span>
+</span><span class='line'><span class="c1">// Method to return the bezier path with required start end angle and radius </span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="p">)</span><span class="nf">pathWithStartAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">startAngle</span> <span class="nf">endAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">endAngle</span> <span class="nf">radius:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">radius</span> <span class="nf">type:</span><span class="p">(</span><span class="n">RMIndicatorType</span><span class="p">)</span><span class="nv">type</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="kt">BOOL</span> <span class="n">clockwise</span> <span class="o">=</span> <span class="n">startAngle</span> <span class="o">&lt;</span> <span class="n">endAngle</span><span class="p">;</span>
 </span><span class='line'>
-</span><span class='line'>    UIBezierPath *path <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    CGPoint <span class="nv">center</span> <span class="o">=</span> CGPointMake<span class="o">(</span>self.bounds.size.width / 2, self.bounds.size.height / 2<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>    <span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">center</span> <span class="o">=</span> <span class="n">CGPointMake</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">);</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="nb">type</span> <span class="o">==</span> kRMClosedIndicator<span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="n">kRMClosedIndicator</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">clockwise</span><span class="p">:</span><span class="n">clockwise</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>    <span class="k">else</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="o">[</span>path moveToPoint:center<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>        <span class="o">[</span>path closePath<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="k">return</span> path<span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">center</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">clockwise</span><span class="p">:</span><span class="n">clockwise</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="n">closePath</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">path</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>// Function to convert degree to radians
-</span><span class='line'>float degreeToRadian<span class="o">(</span>float degree<span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="o">((</span>degree * M_PI<span class="o">)</span>/180.0f<span class="o">)</span><span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="c1">// Function to convert degree to radians</span>
+</span><span class='line'><span class="kt">float</span> <span class="nf">degreeToRadian</span><span class="p">(</span><span class="kt">float</span> <span class="n">degree</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">((</span><span class="n">degree</span> <span class="o">*</span> <span class="n">M_PI</span><span class="p">)</span><span class="o">/</span><span class="mf">180.0f</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -201,12 +961,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'> CAKeyframeAnimation *pathAnimation <span class="o">=</span> <span class="o">[</span>CAKeyframeAnimation animationWithKeyPath:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setValues:self.paths<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setDuration:self.animationDuration<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setTimingFunction:<span class="o">[</span>CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut<span class="o">]]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setRemovedOnCompletion:YES<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>self.animatingLayer addAnimation:pathAnimation forKey:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'> <span class="bp">CAKeyframeAnimation</span> <span class="o">*</span><span class="n">pathAnimation</span> <span class="o">=</span> <span class="p">[</span><span class="bp">CAKeyframeAnimation</span> <span class="nl">animationWithKeyPath</span><span class="p">:</span><span class="s">@&quot;path&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setValues</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">paths</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setDuration</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">animationDuration</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setTimingFunction</span><span class="p">:[</span><span class="bp">CAMediaTimingFunction</span> <span class="nl">functionWithName</span><span class="p">:</span><span class="n">kCAMediaTimingFunctionEaseOut</span><span class="p">]];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setRemovedOnCompletion</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span> <span class="nl">addAnimation</span><span class="p">:</span><span class="n">pathAnimation</span> <span class="nl">forKey</span><span class="p">:</span><span class="s">@&quot;path&quot;</span><span class="p">];</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -299,33 +1059,60 @@
 
 <h2>ObjC Pseudo Code</h2>
 
-<pre><code>NSMutableArray *points = [[NSMutableArray alloc] init];
-//populate points with CGPoint
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'><span class="c1">//populate points with CGPoint</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">derivative</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSInteger</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MAX</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)];</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">next</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MIN</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">)];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">derivative</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">next</span> <span class="o">-</span> <span class="n">prev</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
+</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSUInteger</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">endPoint</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span> <span class="n">derivative</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">derivatives</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addCurveToPoint</span><span class="p">:</span><span class="n">endPoint</span> <span class="nl">controlPoint1</span><span class="p">:</span><span class="n">cp1</span> <span class="nl">controlPoint2</span><span class="p">:</span><span class="n">cp2</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">return</span> <span class="n">path</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
 
-NSMutableArray *derivative = [[NSMutableArray alloc] init];
-
-for(NSInteger j=0;j&lt;points.count;j++) {
-    CGPoint prev = points[MAX(j-1,0)];
-    CGPoint next = points[MIN(j+1,points.count-1)];
-
-    derivative[j] = (next - prev) / 2;
-}
-
-UIBezierPath *path = [UIBezierPath bezierPath];
-for(NSUInteger i=0;i&lt;points.count;i++) {
-    if(i==0) {
-        [path moveToPoint:points[i]]
-    } else {
-        CGPoint endPoint = points[i];
-        CGPoint cp1 = points[i-1]+ derivative[i-1]/tension;
-        CGPoint cp2 = points[i] + derivatives[i]/tension;
-
-        [path addCurveToPoint:endPoint controlPoint1:cp1 controlPoint2:cp2];
-    }
-}
-
-return path;
-</code></pre>
 
 <h2>Code</h2>
 

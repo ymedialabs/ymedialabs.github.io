@@ -96,12 +96,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>self.animatinglayer <span class="o">=</span> <span class="o">[</span>CAShapeLayer layer<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>self.animatingLayer.strokeColor <span class="o">=</span> &lt;<span class="c">#stroke color#&gt;;</span>
-</span><span class='line'>self.animatingLayer.fillColor <span class="o">=</span> &lt;<span class="c">#fill color#&gt;;</span>
-</span><span class='line'>self.animatingLayer.lineWidth <span class="o">=</span> &lt;<span class="c">#line width#&gt;;</span>
-</span><span class='line'>self.animatingLayer.frame <span class="o">=</span> self.bounds<span class="p">;</span>
-</span><span class='line'><span class="o">[</span>self.layer addSublayer:self.animatingLayer<span class="o">]</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatinglayer</span> <span class="o">=</span> <span class="p">[</span><span class="bp">CAShapeLayer</span> <span class="n">layer</span><span class="p">];</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">strokeColor</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">stroke</span> <span class="n">color</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">fillColor</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">fill</span> <span class="n">color</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">lineWidth</span> <span class="o">=</span> <span class="o">&lt;</span><span class="err">#</span><span class="n">line</span> <span class="n">width</span><span class="err">#</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">;</span>
+</span><span class='line'><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">layer</span> <span class="nl">addSublayer</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span><span class="p">];</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -117,16 +117,16 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>UIBezierPath *initialPath <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span> //empty path
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">initialPath</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span> <span class="c1">//empty path</span>
 </span><span class='line'>
-</span><span class='line'>// get the radius of the inner path
-</span><span class='line'>CGFloat <span class="nv">radius</span> <span class="o">=</span> MIN<span class="o">(</span>CGRectGetWidth<span class="o">(</span>self.bounds<span class="o">)</span>, CGRectGetHeight<span class="o">(</span>self.bounds<span class="o">))</span>/2<span class="p">;</span>
+</span><span class='line'><span class="c1">// get the radius of the inner path</span>
+</span><span class='line'><span class="n">CGFloat</span> <span class="n">radius</span> <span class="o">=</span> <span class="n">MIN</span><span class="p">(</span><span class="n">CGRectGetWidth</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">),</span> <span class="n">CGRectGetHeight</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
 </span><span class='line'>
-</span><span class='line'>// add the arc
-</span><span class='line'><span class="o">[</span>initialPath addArcWithCenter:center radius:radius startAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> endAngle:degreeToRadian<span class="o">(</span>-90<span class="o">)</span> clockwise:YES<span class="o">]</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// add the arc</span>
+</span><span class='line'><span class="p">[</span><span class="n">initialPath</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span> <span class="nl">clockwise</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
 </span><span class='line'>
-</span><span class='line'>// <span class="nb">set </span>the path
-</span><span class='line'>self.animatinglayer.path <span class="o">=</span> initialPath.CGPath<span class="p">;</span>
+</span><span class='line'><span class="c1">// set the path</span>
+</span><span class='line'><span class="nb">self</span><span class="p">.</span><span class="n">animatinglayer</span><span class="p">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">initialPath</span><span class="p">.</span><span class="bp">CGPath</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -175,47 +175,47 @@
 <span class='line-number'>39</span>
 <span class='line-number'>40</span>
 <span class='line-number'>41</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>- <span class="o">(</span>NSArray *<span class="o">)</span>keyframePathsWithDuration:<span class="o">(</span>CGFloat<span class="o">)</span>duration lastUpdatedAngle:<span class="o">(</span>CGFloat<span class="o">)</span>lastUpdatedAngle newAngle:<span class="o">(</span>CGFloat<span class="o">)</span>newAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    NSUInteger <span class="nv">frameCount</span> <span class="o">=</span> ceil<span class="o">(</span>duration * 60<span class="o">)</span><span class="p">;</span>
-</span><span class='line'>    NSMutableArray *array <span class="o">=</span> <span class="o">[</span>NSMutableArray arrayWithCapacity:frameCount + 1<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">for</span> <span class="o">(</span>int <span class="nv">frame</span> <span class="o">=</span> 0<span class="p">;</span> frame &lt;<span class="o">=</span> frameCount<span class="p">;</span> frame++<span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        CGFloat <span class="nv">startAngle</span> <span class="o">=</span> degreeToRadian<span class="o">(</span>-90<span class="o">)</span><span class="p">;</span>
-</span><span class='line'>        CGFloat <span class="nv">endAngle</span> <span class="o">=</span> lastUpdatedAngle + <span class="o">(((</span>newAngle - lastUpdatedAngle<span class="o">)</span> * frame<span class="o">)</span> / frameCount<span class="o">)</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">keyframePathsWithDuration:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">duration</span> <span class="nf">lastUpdatedAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">lastUpdatedAngle</span> <span class="nf">newAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">newAngle</span> <span class="nf">radius:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">radius</span> <span class="nf">type:</span><span class="p">(</span><span class="n">RMIndicatorType</span><span class="p">)</span><span class="nv">type</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSUInteger</span> <span class="n">frameCount</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">duration</span> <span class="o">*</span> <span class="mi">60</span><span class="p">);</span>
+</span><span class='line'>    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableArray</span> <span class="nl">arrayWithCapacity</span><span class="p">:</span><span class="n">frameCount</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">frame</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">frame</span> <span class="o">&lt;=</span> <span class="n">frameCount</span><span class="p">;</span> <span class="n">frame</span><span class="o">++</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">CGFloat</span> <span class="n">startAngle</span> <span class="o">=</span> <span class="n">degreeToRadian</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">CGFloat</span> <span class="n">endAngle</span> <span class="o">=</span> <span class="n">lastUpdatedAngle</span> <span class="o">+</span> <span class="p">(((</span><span class="n">newAngle</span> <span class="o">-</span> <span class="n">lastUpdatedAngle</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame</span><span class="p">)</span> <span class="o">/</span> <span class="n">frameCount</span><span class="p">);</span>
 </span><span class='line'>
-</span><span class='line'>        <span class="o">[</span>array addObject:<span class="o">(</span>id<span class="o">)([</span>self pathWithStartAngle:startAngle endAngle:endAngle radius:radius <span class="nb">type</span>:type<span class="o">]</span>.CGPath<span class="o">)]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">array</span> <span class="nl">addObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)([</span><span class="nb">self</span> <span class="nl">pathWithStartAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">type</span><span class="p">:</span><span class="n">type</span><span class="p">].</span><span class="bp">CGPath</span><span class="p">)];</span>
+</span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">return</span> <span class="o">[</span>NSArray arrayWithArray:array<span class="o">]</span><span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">[</span><span class="bp">NSArray</span> <span class="nl">arrayWithArray</span><span class="p">:</span><span class="n">array</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>// Method to <span class="k">return</span> the bezier path with required start end angle and radius
-</span><span class='line'>- <span class="o">(</span>UIBezierPath *<span class="o">)</span>pathWithStartAngle:<span class="o">(</span>CGFloat<span class="o">)</span>startAngle endAngle:<span class="o">(</span>CGFloat<span class="o">)</span>endAngle radius:<span class="o">(</span>CGFloat<span class="o">)</span>radius <span class="nb">type</span>:<span class="o">(</span>RMIndicatorType<span class="o">)</span><span class="nb">type</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    BOOL <span class="nv">clockwise</span> <span class="o">=</span> startAngle &lt; endAngle<span class="p">;</span>
+</span><span class='line'><span class="c1">// Method to return the bezier path with required start end angle and radius </span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="p">)</span><span class="nf">pathWithStartAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">startAngle</span> <span class="nf">endAngle:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">endAngle</span> <span class="nf">radius:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">radius</span> <span class="nf">type:</span><span class="p">(</span><span class="n">RMIndicatorType</span><span class="p">)</span><span class="nv">type</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="kt">BOOL</span> <span class="n">clockwise</span> <span class="o">=</span> <span class="n">startAngle</span> <span class="o">&lt;</span> <span class="n">endAngle</span><span class="p">;</span>
 </span><span class='line'>
-</span><span class='line'>    UIBezierPath *path <span class="o">=</span> <span class="o">[</span>UIBezierPath bezierPath<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    CGPoint <span class="nv">center</span> <span class="o">=</span> CGPointMake<span class="o">(</span>self.bounds.size.width / 2, self.bounds.size.height / 2<span class="o">)</span><span class="p">;</span>
+</span><span class='line'>    <span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">center</span> <span class="o">=</span> <span class="n">CGPointMake</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">);</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="nb">type</span> <span class="o">==</span> kRMClosedIndicator<span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="n">kRMClosedIndicator</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">clockwise</span><span class="p">:</span><span class="n">clockwise</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>    <span class="k">else</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="o">[</span>path moveToPoint:center<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>        <span class="o">[</span>path addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:clockwise<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>        <span class="o">[</span>path closePath<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="k">return</span> path<span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">center</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addArcWithCenter</span><span class="p">:</span><span class="n">center</span> <span class="nl">radius</span><span class="p">:</span><span class="n">radius</span> <span class="nl">startAngle</span><span class="p">:</span><span class="n">startAngle</span> <span class="nl">endAngle</span><span class="p">:</span><span class="n">endAngle</span> <span class="nl">clockwise</span><span class="p">:</span><span class="n">clockwise</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="n">closePath</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">path</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
 </span><span class='line'>
-</span><span class='line'>// Function to convert degree to radians
-</span><span class='line'>float degreeToRadian<span class="o">(</span>float degree<span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="o">((</span>degree * M_PI<span class="o">)</span>/180.0f<span class="o">)</span><span class="p">;</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="c1">// Function to convert degree to radians</span>
+</span><span class='line'><span class="kt">float</span> <span class="nf">degreeToRadian</span><span class="p">(</span><span class="kt">float</span> <span class="n">degree</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">((</span><span class="n">degree</span> <span class="o">*</span> <span class="n">M_PI</span><span class="p">)</span><span class="o">/</span><span class="mf">180.0f</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -227,12 +227,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'> CAKeyframeAnimation *pathAnimation <span class="o">=</span> <span class="o">[</span>CAKeyframeAnimation animationWithKeyPath:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setValues:self.paths<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setDuration:self.animationDuration<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setTimingFunction:<span class="o">[</span>CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut<span class="o">]]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>pathAnimation setRemovedOnCompletion:YES<span class="o">]</span><span class="p">;</span>
-</span><span class='line'>    <span class="o">[</span>self.animatingLayer addAnimation:pathAnimation forKey:@<span class="s2">&quot;path&quot;</span><span class="o">]</span><span class="p">;</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'> <span class="bp">CAKeyframeAnimation</span> <span class="o">*</span><span class="n">pathAnimation</span> <span class="o">=</span> <span class="p">[</span><span class="bp">CAKeyframeAnimation</span> <span class="nl">animationWithKeyPath</span><span class="p">:</span><span class="s">@&quot;path&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setValues</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">paths</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setDuration</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">animationDuration</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setTimingFunction</span><span class="p">:[</span><span class="bp">CAMediaTimingFunction</span> <span class="nl">functionWithName</span><span class="p">:</span><span class="n">kCAMediaTimingFunctionEaseOut</span><span class="p">]];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pathAnimation</span> <span class="nl">setRemovedOnCompletion</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">animatingLayer</span> <span class="nl">addAnimation</span><span class="p">:</span><span class="n">pathAnimation</span> <span class="nl">forKey</span><span class="p">:</span><span class="s">@&quot;path&quot;</span><span class="p">];</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -256,6 +256,12 @@
 
 <time class='entry-date' datetime='2015-05-14T12:19:13+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:19 pm</span></time>
       
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
 
 
     </p>
@@ -289,19 +295,23 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve Through a Set of 2D Points in iOS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/11/lets-roll/">Lets Roll!</a>
       </li>
     
   </ul>
