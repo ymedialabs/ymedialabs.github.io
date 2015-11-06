@@ -3,6 +3,8 @@ layout: post
 title: "Draw a Bezier Curve through a set of 2D Points in iOS"
 date: 2015-05-12 21:47:19 +0530
 author: Darshan Sonde
+author_twitter: darCwader
+author_gravatar: cb17076ad031f9b9a482304468d9cd5a
 comments: true
 categories: iOS
 ---
