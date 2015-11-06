@@ -9,16 +9,16 @@ highlighter: pygments
 
 exclude: [vendor]
 
-paginate: 5
+paginate: 10
 baseurl: /
-domain_name: 'http://.com'
+domain_name: 'http://ymedialabs.github.com'
 google_analytics: 
 disqus: false
 disqus_shortname: 
 
 # Details for the RSS feed generator
-url:            'http://.com'
-author:         'YMediaLabs'
+url:            'http://ymedialabs.github.io'
+author:         'Y Media Labs'
 authorTwitter:  'ymedialabs'
 
 permalink:       /blog/:year/:month/:day/:title/
