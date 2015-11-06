@@ -1,0 +1,19 @@
+---
+layout: post
+title: "Lets Roll!"
+author: Darshan Sonde
+date: 2015-05-11 17:10:51 +0530
+comments: true
+categories: 
+---
+
+Welcome to YMediaLabs Engineering blog! This is a public forum where we share the latest things we work on. Somethings we think is good to share with the world. Fun things, interesting things and some amazing code.
+
+We are very exited to start this blog and lot of us have great things to share in the days to come. 
+
+YMediaLabs is a complete interactive mobile solutions agency. We specialize in mobile app design and development for all major platforms, including the Apple iPhone, iPad, and Android. YMediaLabs is an award-winning, San Francisco Bay Area-based agency that has worked with small-to-medium businesses, disruptive startups, and Fortune 500 companies. Some of our key clients include American Express, Apple, eBay, EMC, First Data, L'Oreal, Montessorium, Staples, and Western Union. Our work has been featured by Apple, TechCrunch, Forbes and Mashable among others. To know more visit [YMediaLabs Website]
+
+
+
+
+[YMediaLabs Website]:http://ymedialabs.com
