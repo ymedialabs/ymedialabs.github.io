@@ -87,7 +87,7 @@ h2 {
 	display: inline-block;
 	width: 80px;
 	height: 80px;
-	border-radius: 50%;
+	/*border-radius: 50%;*/
 	margin-bottom: 20px;
 }
 
@@ -139,7 +139,7 @@ nav.main-nav a.cta {
 }
 
 #wrapper {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   padding: 60px 40px 100px 40px;
 }
