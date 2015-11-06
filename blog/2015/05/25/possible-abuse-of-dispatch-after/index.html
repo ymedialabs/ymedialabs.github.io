@@ -1,230 +1,141 @@
-
 <!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Possible Abuse of Dispatch_after - YMediaLabs Engineering Blog</title>
-  <meta name="author" content="YMediaLabs">
-
-  
-  <meta name="description" content="I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using &hellip;">
-  
-
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
-  <link rel="canonical" href="http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="YMediaLabs Engineering Blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
-
+  <title>Y Media Labs Engineering Blog - Possible abuse of dispatch_after</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
 </head>
+<body>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">YMediaLabs Engineering Blog</a></h1>
-  
-</hgroup>
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
 
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-<form action="https://www.google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="sitesearch" value="ymedialabs.github.io">
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
-
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
 </nav>
-  <div id="main">
-    <div id="content">
-      <div>
-<article class="hentry" role="article">
+
   
-  <header>
-    
-      <h1 class="entry-title">Possible Abuse of Dispatch_after</h1>
-    
-    
-      <p class="meta">
-        
 
-
-
-
-<time class='entry-date' datetime='2015-05-25T17:36:08+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:36 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-<div class="entry-content"><p>I often come across code which uses dispatch_after GCD API to fire some process when an animation completes. I often feel this an abuse on using <strong>dispatch_after</strong> API. I would more like to use callbacks which notifies the completion of animation.</p>
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Possible abuse of dispatch_after</h1>
+        <h2 class="headline">May 25, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>I often come across code which uses dispatch<em>after GCD API to fire some process when an animation completes. I often feel this an abuse on using **dispatch</em>after** API. I would more like to use callbacks which notifies the completion of animation.</p>
 
 <p>iOS provides these call backs via <strong>CATransaction</strong>. CATransaction groups several mono animation transaction into a atomic trasaction. All the changes to the rendering tree in the new run loop must be applied here.</p>
 
-<p>Say there are two mono animations A (say translates a view in time t1) and B (say say scales a view in a time t2: t2>t1) and some process P needs to be fired after all the animation is complete i.e after time t2. Usually dispatch_after API is used to fire P after t2.</p>
+<p>Say there are two mono animations A (say translates a view in time t1) and B (say say scales a view in a time t2: t2&gt;t1) and some process P needs to be fired after all the animation is complete i.e after time t2. Usually dispatch_after API is used to fire P after t2.</p>
 
-<p>The usage of dispatch_after can be eliminate as follows:</p>
+<p>The usage of dispatch_after can be eliminate as follows:
+```objc
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+        // call process P
+    }];</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// Animation A;
+// Animation B;
+[CATransaction commit];
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">when animation A and B are performerd in between [CATransaction begin] and [CATransaction commit] calls, the animations are considered as an atomic change and are applied to the render tree the same time and the transaction completion block is called when the atomic animation completes. 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="n">begin</span><span class="p">];</span>
-</span><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="nl">setCompletionBlock</span><span class="p">:</span><span class="o">^</span><span class="p">{</span>
-</span><span class='line'>    <span class="c1">// call process P</span>
-</span><span class='line'><span class="p">}];</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// Animation A;</span>
-</span><span class='line'><span class="c1">// Animation B;</span>
-</span><span class='line'><span class="p">[</span><span class="bp">CATransaction</span> <span class="n">commit</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>when animation A and B are performerd in between [CATransaction begin] and [CATransaction commit] calls, the animations are considered as an atomic change and are applied to the render tree the same time and the transaction completion block is called when the atomic animation completes.</p>
-
-<p>This way we can eliminate the usage of dispatch_after API reducing the overhead of changing the adjusting the time if the animation duration changes.</p>
-</div>
-
-
-  <footer>
-    <p class="meta">
-      
-  
-
-<span class="byline author vcard">Posted by <span class="fn">Mahesh Shanbhag</span></span>
-
-      
-
-
-
-
-<time class='entry-date' datetime='2015-05-25T17:36:08+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:36 pm</span></time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/ios/'>ios</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/" data-via="ymedialabs" data-counturl="http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2015/05/14/shaping-up-with-cashapelayer/" title="Previous Post: Shaping up with CAShapeLayer">&laquo; Shaping up with CAShapeLayer</a>
-      
-      
-        <a class="basic-alignment right" href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/" title="Next Post: Symbolicating crashes now made easy">Symbolicating crashes now made easy &raquo;</a>
-      
-    </p>
-  </footer>
+This way we can eliminate the usage of dispatch_after API reducing the overhead of changing the adjusting the time if the animation duration changes.
+</code></pre></div>
+    </section>
 </article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/">
+		<img class=avatar src="http://www.gravatar.com/avatar/?s=40">
+        <div>
+            <span class="dark">Mahesh Shanbhag</span>
+            <span>Author</span>
+        </div>
+    </a>
 
-</div>
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2015/05/25/possible-abuse-of-dispatch-after/ - Possible abuse of dispatch_after by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
 
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
-      </li>
-    
-  </ul>
-</section>
-
-
-
-  
-</aside>
-
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - YMediaLabs -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
-
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
 </footer>
-  
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
 
 
 
 
 
+  </section>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
   </script>
-
-
-
-
-
 </body>
 </html>
+
+
+

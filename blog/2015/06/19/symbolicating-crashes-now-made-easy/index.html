@@ -1,88 +1,39 @@
-
 <!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Symbolicating Crashes Now Made Easy - YMediaLabs Engineering Blog</title>
-  <meta name="author" content="YMediaLabs">
-
-  
-  <meta name="description" content="About dSYM If you have issues with symbolicating crashes in iOS by dragging the .crash file into the organiser tab, there is a symbolicatecrash.pl &hellip;">
-  
-
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
-  <link rel="canonical" href="http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="YMediaLabs Engineering Blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
-
+  <title>Y Media Labs Engineering Blog - Symbolicating crashes now made easy</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
 </head>
+<body>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">YMediaLabs Engineering Blog</a></h1>
-  
-</hgroup>
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
 
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-<form action="https://www.google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="sitesearch" value="ymedialabs.github.io">
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
-
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
 </nav>
-  <div id="main">
-    <div id="content">
-      <div>
-<article class="hentry" role="article">
+
   
-  <header>
-    
-      <h1 class="entry-title">Symbolicating Crashes Now Made Easy</h1>
-    
-    
-      <p class="meta">
-        
 
-
-
-
-<time class='entry-date' datetime='2015-06-19T09:30:15+05:30'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:30 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-<div class="entry-content"><h3>About dSYM</h3>
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Symbolicating crashes now made easy</h1>
+        <h2 class="headline">June 19, 2015</h2>
+    </header>
+    <section id="post-body">
+        <h3>About dSYM</h3>
 
 <p>If you have issues with symbolicating crashes in iOS by dragging the .crash file into the organiser tab, there is a <code>symbolicatecrash.pl</code> script provide by Xcode as well as <code>atos</code> tool to symbolicate the crash and a memory reference respectively. The script allows us to symbolicate the whole crash file where as using atos we can symbolicate single memory reference.</p>
 
@@ -90,19 +41,18 @@
 
 <h3>Using dSYM for symbolicating crashes</h3>
 
-<p>To symbolicate a crash file you need the original .dSYM file for that build. Xcode comes with a build in perl script to symbolicate the crash file using the .dSYM file.To do this we need to open terminal, set up an env variable DEVELOPER_DIR and add an alias to &lsquo;symbolicatecrash.pl&rsquo; script.</p>
+<p>To symbolicate a crash file you need the original .dSYM file for that build. Xcode comes with a build in perl script to symbolicate the crash file using the .dSYM file.To do this we need to open terminal, set up an env variable DEVELOPER_DIR and add an alias to &#39;symbolicatecrash.pl&#39; script.</p>
 
 <h3>symbolication project (A Xcode plugin)</h3>
 
 <p>Symbolication project enables <em>symbolication-plugin</em> an Xcode plugin. This plugin is available in Product menu and is named <code>Symbolicate</code>. This is now available on <a href="https://github.com/ymedialabs/symbolication-plugin">YML Github Account</a>.</p>
 
 <ul>
-<li>Symbolicate Plugin is used to symbolicate crashes. If <code>dSYM file</code> and  <code>crash file</code> is available, the crash can be symbolicated using the Plugin.</li>
+<li>Symbolicate Plugin is used to symbolicate crashes. If <code>dSYM file</code> and  <code>crash file</code> is available, the crash can be symbolicated using the Plugin. </li>
 <li>1.0 (0.1)</li>
 </ul>
 
-
-<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/product_menu.png" title="Produce Menu" alt="Product Menu" /></p>
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/product_menu.png" alt="Product Menu" title="Produce Menu"></p>
 
 <h3>How do I get set up?</h3>
 
@@ -113,16 +63,14 @@
 <li>ta-da! the plugin is installed</li>
 </ul>
 
-
 <h3>How to check if the plugin is installed</h3>
 
 <ul>
 <li>Open Terminal</li>
 <li>Navigate to ~/Library/Application Support/Developer/Shared/Xcode/Plug-ins directory</li>
 <li>Type ls -l</li>
-<li><code>SymbolicationPlugin.xcplugin</code> should be listed in the installed plug-in&rsquo;s list.</li>
+<li><code>SymbolicationPlugin.xcplugin</code> should be listed in the installed plug-in&#39;s list.</li>
 </ul>
-
 
 <h3>Requirements</h3>
 
@@ -133,7 +81,6 @@
 <li>The dSYM file associated with the build.</li>
 <li>The application unix executable file for the available inside the application.app bundle (application.app/application).</li>
 </ul>
-
 
 <h3>How to use the Plugin?</h3>
 
@@ -149,10 +96,9 @@
 <li>Select Symbolicate. The plugin begins symbolicating the crash.</li>
 </ul>
 
-
 <p>Note: Additionally you can save the crash file by clicking at the down arrow at the bottom left of the screen.</p>
 
-<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Symbolicate_screen.png" title="Symbolicate Section" alt="Symbolicate" /></p>
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Symbolicate_screen.png" alt="Symbolicate" title="Symbolicate Section"></p>
 
 <h4>Checking the application details</h4>
 
@@ -163,8 +109,7 @@
 <li>The details of the application like the build UUID, the build architecture is displayed.</li>
 </ul>
 
-
-<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Details_screen.png" title="Details Section" alt="Details" /></p>
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Details_screen.png" alt="Details" title="Details Section"></p>
 
 <h4>Symbolicating memory references available in the crash file</h4>
 
@@ -173,127 +118,98 @@
 <ul>
 <li>Select the application executable file (Unix executable file) available inside the application.app bundle (application.app/application).</li>
 <li>List down the memory addresses a single space saperated list.</li>
-<li>Select the architecture (This can be found using the above &lsquo;Details&rsquo; section).</li>
+<li>Select the architecture (This can be found using the above &#39;Details&#39; section).</li>
 <li>Select Symbolicate. The Plugin displayes the symbolicated memory reference.</li>
 </ul>
 
+<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Memory_screen.png" alt="Memory" title="Memory Section"></p>
 
-<p><img src="https://raw.githubusercontent.com/ymedialabs/symbolication-plugin/master/screenshots/Memory_screen.png" title="Memory Section" alt="Memory" /></p>
+<p>This is now also available on <a href="http://alcatraz.io">Alcatraz Package Manager</a> for Xcode. </p>
 
-<p>This is now also available on <a href="http://alcatraz.io">Alcatraz Package Manager</a> for Xcode.</p>
-</div>
-
-
-  <footer>
-    <p class="meta">
-      
-  
-
-<span class="byline author vcard">Posted by <span class="fn">Mahesh Shanbhag</span></span>
-
-      
-
-
-
-
-<time class='entry-date' datetime='2015-06-19T09:30:15+05:30'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:30 am</span></time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/ios/'>ios</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/" data-via="ymedialabs" data-counturl="http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2015/05/25/possible-abuse-of-dispatch-after/" title="Previous Post: Possible abuse of dispatch_after">&laquo; Possible abuse of dispatch_after</a>
-      
-      
-        <a class="basic-alignment right" href="/blog/2015/06/30/apple-watch-connectivity/" title="Next Post: How do we communicate between Watch and iPhone App ?">How do we communicate between Watch and iPhone App ? &raquo;</a>
-      
-    </p>
-  </footer>
+    </section>
 </article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/">
+		<img class=avatar src="http://www.gravatar.com/avatar/?s=40">
+        <div>
+            <span class="dark">Mahesh Shanbhag</span>
+            <span>Author</span>
+        </div>
+    </a>
 
-</div>
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2015/06/19/symbolicating-crashes-now-made-easy/ - Symbolicating crashes now made easy by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
 
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
-      </li>
-    
-  </ul>
-</section>
-
-
-
-  
-</aside>
-
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - YMediaLabs -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
-
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
 </footer>
-  
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
 
 
 
 
 
+  </section>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
   </script>
-
-
-
-
-
 </body>
 </html>
+
+
+

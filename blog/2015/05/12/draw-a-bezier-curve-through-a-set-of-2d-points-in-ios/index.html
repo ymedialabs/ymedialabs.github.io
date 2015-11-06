@@ -1,90 +1,41 @@
-
 <!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Draw a Bezier Curve Through a Set of 2D Points in iOS - YMediaLabs Engineering Blog</title>
-  <meta name="author" content="YMediaLabs">
-
-  
-  <meta name="description" content="We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier &hellip;">
-  
-
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
-  <link rel="canonical" href="http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="YMediaLabs Engineering Blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
-
+  <title>Y Media Labs Engineering Blog - Draw a Bezier Curve through a set of 2D Points in iOS</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
 </head>
+<body>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">YMediaLabs Engineering Blog</a></h1>
-  
-</hgroup>
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
 
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-<form action="https://www.google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="sitesearch" value="ymedialabs.github.io">
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
-
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
 </nav>
-  <div id="main">
-    <div id="content">
-      <div>
-<article class="hentry" role="article">
+
   
-  <header>
-    
-      <h1 class="entry-title">Draw a Bezier Curve Through a Set of 2D Points in iOS</h1>
-    
-    
-      <p class="meta">
-        
 
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Draw a Bezier Curve through a set of 2D Points in iOS</h1>
+        <h2 class="headline">May 12, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.</p>
 
-
-
-<time class='entry-date' datetime='2015-05-12T21:47:19+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-<div class="entry-content"><p>We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.</p>
-
-<p><img src="/images/posts/2015-05-12/curve.png" title="&#34;Curve&#34;" alt="&#34;Curve&#34;"></p>
+<p><img src="/assets/images/posts/2015-05-12/curve.png" alt="Curve" ></p>
 
 <p>In the above figure, red line shows the points we have. blue line represents the cardinal curve we want to create. Cardinal curve goes through all the points.</p>
 
@@ -97,28 +48,23 @@
 <li>Cubic</li>
 </ul>
 
-
 <h2>Quadratic</h2>
 
-<p>Quadratic curve has one control point which defines how the curvature of the bezier should be.</p>
-
-<pre><code>[bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
-</code></pre>
-
-<p><img src="/images/posts/2015-05-12/quadratic.gif" title="&#34;Quadratic&#34;" alt="&#34;Quadratic&#34;"></p>
+<p>Quadratic curve has one control point which defines how the curvature of the bezier should be. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">[bezierPath addQuadCurveToPoint:destPoint controlPoint:cp1];
+</code></pre></div>
+<p><img src="/assets/images/posts/2015-05-12/quadratic.gif" alt="Quadratic" ></p>
 
 <p>here P<sub>0</sub> is starting point and P<sub>2</sub> is ending point. P<sub>1</sub> is the Control Point.</p>
 
 <h2>Cubic</h2>
 
-<p>Cubic curve has two control ponints which define its curvature.</p>
+<p>Cubic curve has two control ponints which define its curvature. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text"> [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
+</code></pre></div>
+<p><img src="/assets/images/posts/2015-05-12/cubic.gif" alt="Cubic" ></p>
 
-<pre><code> [bezierPath addCurveToPoint:destPoint controlPoint1:cp1 controlPoint2:cp2];
-</code></pre>
-
-<p><img src="/images/posts/2015-05-12/cubic.gif" title="&#34;Cubic&#34;" alt="&#34;Cubic&#34;"></p>
-
-<p>here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2.</p>
+<p>here P<sub>0</sub> is starting point and P<sub>3</sub> is ending point. P<sub>1</sub> is the Control Point 1.P<sub>2</sub> is the Control Point 2. </p>
 
 <h1>Cardinal Curves</h1>
 
@@ -130,7 +76,7 @@
 
 <p>consider the control points we need. see that at T2, the handle is paralled to the neighboring points. in order to calculate this, we will compute the derivatives at each point which would give us the tangents.</p>
 
-<p><img src="/images/posts/2015-05-12/soln.png" title="&#34;Soln&#34;" alt="&#34;Soln&#34;"></p>
+<p><img src="/assets/images/posts/2015-05-12/soln.png" alt="Soln" ></p>
 
 <p>the green bars are the computed derivatives at each of the points. first and last points would go towards the neighboring points.</p>
 
@@ -141,196 +87,138 @@
 <li>for any given point, the control points(T2) are tangents , tangent is parallel to previous two points and hence we can compute using derivatives at each point</li>
 </ul>
 
-
 <h2>Equations</h2>
 
-<p>Let P<sub>0</sub> , P<sub>1</sub> &hellip; P<sub>n</sub> be the points.</p>
+<p>Let P<sub>0</sub> , P<sub>1</sub> ... P<sub>n</sub> be the points.</p>
 
 <p>point derivatives can be computed by</p>
 
-<p><img src="/images/posts/2015-05-12/point-derivatives.png" title="&#34;Derivatives&#34;" alt="&#34;Derivatives&#34;"></p>
+<p><img src="/assets/images/posts/2015-05-12/point-derivatives.png" alt="Derivatives" ></p>
 
 <p>we need to calculate the control points from these. we can calculate those using.</p>
 
-<p><img src="/images/posts/2015-05-12/controlpoints.png" title="&#34;ControlPoints&#34;" alt="&#34;ControlPoints&#34;"></p>
+<p><img src="/assets/images/posts/2015-05-12/controlpoints.png" alt="ControlPoints" ></p>
 
 <p>Once we have the control points, we can easily compose the Bezier Path.</p>
 
 <p>Alpha is a tension. which gives the amount of smoothness needed in the curve.</p>
 
 <h2>ObjC Pseudo Code</h2>
+<div class="highlight"><pre><code class="language-objc" data-lang="objc">    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="c1">//populate points with CGPoint</span>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-</span><span class='line'><span class="c1">//populate points with CGPoint</span>
-</span><span class='line'>
-</span><span class='line'><span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">derivative</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSInteger</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MAX</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)];</span>
-</span><span class='line'>    <span class="bp">CGPoint</span> <span class="n">next</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MIN</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">)];</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">derivative</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">next</span> <span class="o">-</span> <span class="n">prev</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
-</span><span class='line'><span class="k">for</span><span class="p">(</span><span class="bp">NSUInteger</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">endPoint</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
-</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span> <span class="n">derivative</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
-</span><span class='line'>        <span class="bp">CGPoint</span> <span class="n">cp2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">derivatives</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="p">[</span><span class="n">path</span> <span class="nl">addCurveToPoint</span><span class="p">:</span><span class="n">endPoint</span> <span class="nl">controlPoint1</span><span class="p">:</span><span class="n">cp1</span> <span class="nl">controlPoint2</span><span class="p">:</span><span class="n">cp2</span><span class="p">];</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">return</span> <span class="n">path</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
+    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">derivative</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableArray</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
 
+    <span class="k">for</span><span class="p">(</span><span class="bp">NSInteger</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="bp">CGPoint</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MAX</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)];</span>
+        <span class="bp">CGPoint</span> <span class="n">next</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">MIN</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">)];</span>
 
+        <span class="n">derivative</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">next</span> <span class="o">-</span> <span class="n">prev</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="bp">UIBezierPath</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIBezierPath</span> <span class="n">bezierPath</span><span class="p">];</span>
+    <span class="k">for</span><span class="p">(</span><span class="bp">NSUInteger</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">points</span><span class="p">.</span><span class="n">count</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">[</span><span class="n">path</span> <span class="nl">moveToPoint</span><span class="p">:</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="bp">CGPoint</span> <span class="n">endPoint</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+            <span class="bp">CGPoint</span> <span class="n">cp1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span> <span class="n">derivative</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+            <span class="bp">CGPoint</span> <span class="n">cp2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">derivatives</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tension</span><span class="p">;</span>
+
+            <span class="p">[</span><span class="n">path</span> <span class="nl">addCurveToPoint</span><span class="p">:</span><span class="n">endPoint</span> <span class="nl">controlPoint1</span><span class="p">:</span><span class="n">cp1</span> <span class="nl">controlPoint2</span><span class="p">:</span><span class="n">cp2</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">path</span><span class="p">;</span>
+</code></pre></div>
 <h2>Code</h2>
 
 <p>Complete project at : <a href="https://github.com/ymedialabs/ykbezieradditions.git">YKBezierAdditions</a></p>
-</div>
 
-
-  <footer>
-    <p class="meta">
-      
-  
-
-<span class="byline author vcard">Posted by <span class="fn">Darshan Sonde</span></span>
-
-      
-
-
-
-
-<time class='entry-date' datetime='2015-05-12T21:47:19+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 pm</span></time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/ios/'>ios</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/" data-via="ymedialabs" data-counturl="http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2015/05/11/lets-roll/" title="Previous Post: Lets Roll!">&laquo; Lets Roll!</a>
-      
-      
-        <a class="basic-alignment right" href="/blog/2015/05/14/shaping-up-with-cashapelayer/" title="Next Post: Shaping up with CAShapeLayer">Shaping up with CAShapeLayer &raquo;</a>
-      
-    </p>
-  </footer>
+    </section>
 </article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/darCwader">
+		<img class=avatar src="http://www.gravatar.com/avatar/cb17076ad031f9b9a482304468d9cd5a?s=40">
+        <div>
+            <span class="dark">Darshan Sonde</span>
+            <span>Author</span>
+        </div>
+    </a>
 
-</div>
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/ - Draw a Bezier Curve through a set of 2D Points in iOS by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
 
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication Between Apple Watch With New WatchOS-2 and iPhone</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/30/apple-watch-connectivity/">How Do We Communicate Between Watch and iPhone App ?</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating Crashes Now Made Easy</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible Abuse of Dispatch_after</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping Up With CAShapeLayer</a>
-      </li>
-    
-  </ul>
-</section>
-
-
-
-  
-</aside>
-
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - YMediaLabs -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
-
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
 </footer>
-  
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
 
 
 
 
 
+  </section>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
   </script>
-
-
-
-
-
 </body>
 </html>
+
+
+

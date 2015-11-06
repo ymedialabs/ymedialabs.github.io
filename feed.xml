@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Y Media Labs Engineering Blog</title>
+    <description></description>
+    <link>http://ymedialabs.github.io</link>
+    <atom:link href="http://ymedialabs.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Communication between Apple Watch with new WatchOS-2 and iPhone</title>
+        
+        
+          <description>&lt;p&gt;In Watch OS 2, apple moved the watch extension bundle &amp;amp; data source to watch itself, previously it was in iPhone only. No more &lt;strong&gt;openParentApplication:&lt;/strong&gt; api call, &lt;strong&gt;CFNotificationCenterGetDarwinNotifyCenter&lt;/strong&gt; &amp;amp; &lt;strong&gt;sharedGroups&lt;/strong&gt;. Apple itself given new framework for all sorts of communication named WatchConnectivity, supports for NSURLSession &amp;amp; codedata.&lt;/p&gt;
+</description>
+        
+        <pubDate>Fri, 03 Jul 2015 10:46:36 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/07/03/communication-in-apple-watchos-2/</guid>
+      </item>
+    
+      <item>
+        <title>How do we communicate between Watch and iPhone App ?</title>
+        
+        
+          <description>&lt;p&gt;Apple Watch uses Wi-Fi and Bluetooth to communicate with your paired iPhone, switching between connections as needed:  &lt;/p&gt;
+</description>
+        
+        <pubDate>Tue, 30 Jun 2015 13:11:39 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/06/30/apple-watch-connectivity/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/06/30/apple-watch-connectivity/</guid>
+      </item>
+    
+      <item>
+        <title>Symbolicating crashes now made easy</title>
+        
+        
+          <description>&lt;h3&gt;About dSYM&lt;/h3&gt;
+
+&lt;p&gt;If you have issues with symbolicating crashes in iOS by dragging the .crash file into the organiser tab, there is a &lt;code&gt;symbolicatecrash.pl&lt;/code&gt; script provide by Xcode as well as &lt;code&gt;atos&lt;/code&gt; tool to symbolicate the crash and a memory reference respectively. The script allows us to symbolicate the whole crash file where as using atos we can symbolicate single memory reference.&lt;/p&gt;
+</description>
+        
+        <pubDate>Fri, 19 Jun 2015 09:30:15 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/06/19/symbolicating-crashes-now-made-easy/</guid>
+      </item>
+    
+      <item>
+        <title>Possible abuse of dispatch_after</title>
+        
+        
+          <description>&lt;p&gt;I often come across code which uses dispatch&lt;em&gt;after GCD API to fire some process when an animation completes. I often feel this an abuse on using **dispatch&lt;/em&gt;after** API. I would more like to use callbacks which notifies the completion of animation.&lt;/p&gt;
+</description>
+        
+        <pubDate>Mon, 25 May 2015 17:36:08 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/05/25/possible-abuse-of-dispatch-after/</guid>
+      </item>
+    
+      <item>
+        <title>Shaping up with CAShapeLayer</title>
+        
+        
+          <description>&lt;p&gt;What out stands iOS mobile platform from others is the power of animations. For animations iOS provides several classes with animatable properties that makes animations look easier. However some animations like the &lt;em&gt;Apple&amp;#39;s application circular loader&lt;/em&gt;, there are no special classes that readily available for animation.&lt;/p&gt;
+</description>
+        
+        <pubDate>Thu, 14 May 2015 12:19:13 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/05/14/shaping-up-with-cashapelayer/</guid>
+      </item>
+    
+      <item>
+        <title>Draw a Bezier Curve through a set of 2D Points in iOS</title>
+        
+        
+          <description>&lt;p&gt;We got this issue couple of days back where we needed to smooth a line graph like below. It seemed strange that this was not as trivial by the Bezier methods provided by Core Graphics. So we embarked on a journey to find a generic solution.&lt;/p&gt;
+</description>
+        
+        <pubDate>Tue, 12 May 2015 21:47:19 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/</guid>
+      </item>
+    
+      <item>
+        <title>Lets Roll!</title>
+        
+        
+          <description>&lt;p&gt;Welcome to YMediaLabs Engineering blog! This is a public forum where we share the latest things we work on. Somethings we think is good to share with the world. Fun things, interesting things and some amazing code.&lt;/p&gt;
+</description>
+        
+        <pubDate>Mon, 11 May 2015 17:10:51 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/05/11/lets-roll/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/05/11/lets-roll/</guid>
+      </item>
+    
+  </channel>
+</rss>
