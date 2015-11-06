@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Y Media Labs Engineering Blog</title>
-    <description></description>
+    <description>Engineering Blog</description>
     <link>http://ymedialabs.github.io</link>
     <atom:link href="http://ymedialabs.github.io/feed.xml" rel="self" type="application/rss+xml" />
     
