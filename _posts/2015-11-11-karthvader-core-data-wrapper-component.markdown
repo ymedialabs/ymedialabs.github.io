@@ -38,8 +38,7 @@ KarthVader.setConfiguration(config)
 
 KarthVader is a singleton object, it creates and maintain your managed object contexts. It follows Core Data Stack hierarchy.
 
-{% img https://github.com/karthikkeyan/KarthVader/blob/master/Arch.jpg "Context Hierarchy" %}
-
+{% img https://raw.githubusercontent.com/karthikkeyan/KarthVader/master/Arch.jpg "Context Hierarchy" %}
 
 ## Write
 
