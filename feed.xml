@@ -19,6 +19,18 @@
       </item>
     
       <item>
+        <title>UILayoutGuide: Auto Layout Helper View</title>
+        
+        
+          <description>&lt;p&gt;In this article, I will explain how to replace the dummy views, added in our UI, just for the sake of adjusting layout, with a much more light element. We been using dummy view in our UI for long time to ease the pain of Auto Layout complexity. Apple introduced a new technique in iOS 9 to replace those dummy views with a much more lightweight element called UILayoutGuide.&lt;/p&gt;
+</description>
+        
+        <pubDate>Sat, 07 Nov 2015 13:50:28 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/11/07/uilayoutguide-autolayout-helper-view/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/11/07/uilayoutguide-autolayout-helper-view/</guid>
+      </item>
+    
+      <item>
         <title>Communication between Apple Watch with new WatchOS-2 and iPhone</title>
         
         

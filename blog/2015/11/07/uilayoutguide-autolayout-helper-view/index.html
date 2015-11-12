@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Y Media Labs Engineering Blog - UILayoutGuide: Auto Layout Helper View</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
+
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
+</nav>
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>UILayoutGuide: Auto Layout Helper View</h1>
+        <h2 class="headline">November 7, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>In this article, I will explain how to replace the dummy views, added in our UI, just for the sake of adjusting layout, with a much more light element. We been using dummy view in our UI for long time to ease the pain of Auto Layout complexity. Apple introduced a new technique in iOS 9 to replace those dummy views with a much more lightweight element called UILayoutGuide.</p>
+
+<p>UILayoutGuide, as per the Apple documentation,</p>
+
+<p><strong>The UILayoutGuide class defines a rectangular area that can interact with Auto Layout.</strong></p>
+
+<p>sounds like a UIView, isn’t it. Just for a sake of understanding, we can think of it as UIView but it will not appear on the screen and it wont respond to user touches, just dummy.</p>
+
+<p>Let me give you an example, have you ever wanted a layout which contains two controls horizontally aligned centrally and with a fixed space, like the footer view in the below screen.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*100IjEGksMYmbaTxLFrDBw.png"  ></p>
+
+<p>Check out the footer view on this example screen, Add To Cart and Pay buttons are centrally aligned with a fixed space between each other. To achieve this layout there are different methods, one of the famous and commonly used method is, introducing a new separator view, UIView, in between those two buttons, like this</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*09hZjfXuRb-r8bAOxjmc3Q.png" alt="Footer view with dummy view" ></p>
+
+<ol>
+<li>Add a dummy UIView</li>
+<li>Add horizontal + vertical center constraints to the dummy view</li>
+<li>Add any fixed width and height constraints to the dummy view</li>
+<li>Add horizontal spacing constraint between the Add To Cart Button and dummy view</li>
+<li>Finally add horizontal spacing constraint between the Pay button and the dummy view</li>
+</ol>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*STJtLBELkV9L0Shd2HWBbw.jpeg"  ></p>
+
+<p>This should work fine in all the devices.</p>
+
+<h1>It works fine, What is the problem then?</h1>
+
+<p>Of course it works fine, but what we did was a simple UI hack. Then what is the proper solution? Honestly i don&#39;t know.</p>
+
+<p>And Apple said, Let there be a replacement for dummy view and there was a replacement. And Apple called the replacement UILayoutGuide. And there was an iOS 9 and there was a new feature.</p>
+
+<p>UILayoutGuide is a proper solution to solve this issue. But unfortunately Apple forgot to include the UILayoutGuide in Interface Builder.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*_ircx236jlQGnAh2_jPT-g.jpeg"  ></p>
+
+<p>Yes, we can only create UILayoutGuide programmatically.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">layoutGuide</span> <span class="o">=</span> <span class="n">UILayoutGuide</span><span class="p">()</span>
+<span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">addLayoutGuide</span><span class="p">(</span><span class="n">layoutGuide</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">Note:
+1. UILayoutGuide is a dummy rectangular area in you view
+2. It will not respond to user touch
+3. It will not appear on the screen
+4. It is lightweight compare to UIView
+</code></pre></div>
+<p>You can create as many guides as you want, just like view and controls.</p>
+
+<h1>Create views and layout guide</h1>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Separator Layout Guid</span>
+
+<span class="k">let</span> <span class="n">checkoutButtonSeparatorGuide</span> <span class="o">=</span> <span class="n">UILayoutGuide</span><span class="p">()</span>
+
+<span class="n">footerView</span><span class="o">?</span><span class="p">.</span><span class="n">addLayoutGuide</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">)</span>
+
+<span class="c1">// Checkout Button</span>
+
+<span class="k">let</span> <span class="nl">checkoutButton</span><span class="p">:</span> <span class="bp">UIButton</span> <span class="o">=</span> <span class="bp">UIButton</span><span class="p">(</span><span class="nl">type</span><span class="p">:</span> <span class="p">.</span><span class="n">System</span><span class="p">)</span>
+
+<span class="n">checkoutButton</span><span class="p">.</span><span class="n">translatesAutoresizingMaskIntoConstraints</span> <span class="o">=</span> <span class="nb">false</span>
+
+<span class="n">checkoutButton</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="bp">UIColor</span><span class="p">.</span><span class="n">greenColor</span><span class="p">()</span>
+
+<span class="n">checkoutButton</span><span class="p">.</span><span class="n">setTitle</span><span class="p">(</span><span class="err">“</span><span class="n">Checkout</span><span class="err">”</span><span class="p">,</span> <span class="nl">forState</span><span class="p">:</span> <span class="p">.</span><span class="n">Normal</span><span class="p">)</span>
+
+<span class="n">footerView</span><span class="o">?</span><span class="p">.</span><span class="n">addSubview</span><span class="p">(</span><span class="n">checkoutButton</span><span class="p">)</span>
+
+<span class="c1">// Apple Pay Button</span>
+
+<span class="k">let</span> <span class="nl">applePayButton</span><span class="p">:</span> <span class="bp">UIButton</span> <span class="o">=</span> <span class="bp">UIButton</span><span class="p">(</span><span class="nl">type</span><span class="p">:</span> <span class="p">.</span><span class="n">System</span><span class="p">)</span>
+
+<span class="n">applePayButton</span><span class="p">.</span><span class="n">translatesAutoresizingMaskIntoConstraints</span> <span class="o">=</span> <span class="nb">false</span>
+
+<span class="n">applePayButton</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="bp">UIColor</span><span class="p">.</span><span class="n">greenColor</span><span class="p">()</span>
+
+<span class="n">applePayButton</span><span class="p">.</span><span class="n">setTitle</span><span class="p">(</span><span class="err">“</span><span class="n">Pay</span><span class="err">”</span><span class="p">,</span> <span class="nl">forState</span><span class="p">:</span> <span class="p">.</span><span class="n">Normal</span><span class="p">)</span>
+
+<span class="n">footerView</span><span class="o">?</span><span class="p">.</span><span class="n">addSubview</span><span class="p">(</span><span class="n">applePayButton</span><span class="p">)</span>
+</code></pre></div>
+<h3>Add Constraints</h3>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">var</span> <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSLayoutConstraint</span><span class="p">]()</span>
+
+<span class="c1">// Separator Guide Constraints</span>
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">centerXAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">footerView</span><span class="o">?</span><span class="p">.</span><span class="n">centerXAnchor</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">footerView</span><span class="o">?</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">widthAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">heightAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+
+<span class="c1">// Checkout Button Constraints  </span>
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButton</span><span class="p">.</span><span class="n">rightAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">leftAnchor</span><span class="p">,</span> <span class="nl">constant</span><span class="p">:</span> <span class="o">-</span><span class="mi">10</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButton</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButton</span><span class="p">.</span><span class="n">widthAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">124</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">checkoutButton</span><span class="p">.</span><span class="n">heightAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">36</span><span class="p">))</span>
+
+
+<span class="c1">// ApplePay Button Constraints </span>
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">applePayButton</span><span class="p">.</span><span class="n">leftAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">rightAnchor</span><span class="p">,</span> <span class="nl">constant</span><span class="p">:</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">applePayButton</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">.</span><span class="n">constraintEqualToAnchor</span><span class="p">(</span><span class="n">checkoutButtonSeparatorGuide</span><span class="p">.</span><span class="n">centerYAnchor</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">applePayButton</span><span class="p">.</span><span class="n">widthAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">124</span><span class="p">))</span>
+
+<span class="n">constraints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">applePayButton</span><span class="p">.</span><span class="n">heightAnchor</span><span class="p">.</span><span class="n">constraintEqualToConstant</span><span class="p">(</span><span class="mi">36</span><span class="p">))</span>
+
+<span class="bp">NSLayoutConstraint</span><span class="p">.</span><span class="n">activateConstraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+</code></pre></div>
+<p>Build and run the code, your app should layout your view something like this,</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*zBP007RKYFqQQAnPDgI2KA.png" alt="Footer view with layout guide" ></p>
+
+<p>Simple isn’t it?</p>
+
+<p>You can use layout guides in different scenarios, like the above, to build your complex UI without adding any heavy-weight UIViews.</p>
+
+<p>I have included an example project in <a href="https://github.com/karthikkeyan/LayoutGuide">github</a> you can check it out.</p>
+
+<h1>One More Thing… Debugging!</h1>
+
+<p>Since layout guide wont display in the screen, how to debug it?</p>
+
+<p>Add -D DEBUG flag in your Other Swift Flags in your Build Settings of your target.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*PMqjdBwBwHmgjznYVVogMg.png"  ></p>
+
+<p>I have created UIView+LayoutGuideDebug utility. Just add this file into your project and add the below lines in you View/ViewController.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kr">override</span> <span class="k">func</span> <span class="nf">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
+   <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
+
+   <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">showLayoutGuides</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Build and Run the code, now you can see dotted rectangles between your views like the footer view in the below screen.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/800/1*Ryq7jfTHMqIOOZCP16h8Cg.png" alt="Layout guide debugging" ></p>
+
+<p>We will hope that Apple will add layout guide in Interface Builder in upcoming XCode.</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/karthikkeyanb">
+		<img class=avatar src="http://www.gravatar.com/avatar/31b4f6b901db1a5da649e99869c22932?s=40">
+        <div>
+            <span class="dark">Karthik Keyan Balan</span>
+            <span>Author</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2015/11/07/uilayoutguide-autolayout-helper-view/ - UILayoutGuide: Auto Layout Helper View by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
+</footer>
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2015/12/11/karthvader-core-data-wrapper-component/">KarthVader - Core Data Wrapper in Swift<aside class="dates">Dec 11</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/11/07/uilayoutguide-autolayout-helper-view/">UILayoutGuide: Auto Layout Helper View<aside class="dates">Nov 07</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+
