@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Y Media Labs Engineering Blog - KarthVader - Core Data Wrapper in Swift</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
+
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
+</nav>
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>KarthVader - Core Data Wrapper in Swift</h1>
+        <h2 class="headline">December 11, 2015</h2>
+    </header>
+    <section id="post-body">
+        <h2>Overview</h2>
+
+<p>KarthVader is a core data wrapper component for iOS and OS X, built to minimize the effort, of a programmers, to work with core data, by taking advantage of Swift 2.0 features. It gives you natural way of interaction with your core data models.</p>
+
+<p>I would really welcome and appericate contributions to this component.</p>
+
+<h2>How To Get Started</h2>
+
+<p>Download the <a href="https://github.com/karthikkeyan/KarthVader">KarthVader</a> from github and add KarthVader-Source directory into your project.</p>
+
+<h2>Setup</h2>
+
+<p>Before start using KarthVader class, you need to setup the core data file name &amp; object model. Before do any thing with KarthVader you need to give your core data configuration details.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">var</span> <span class="n">config</span> <span class="o">=</span> <span class="n">KarthVaderConfiguration</span><span class="p">()</span>
+<span class="n">config</span><span class="p">.</span><span class="n">dataModelName</span> <span class="o">=</span> <span class="s">&quot;DataModel&quot;</span>
+<span class="n">config</span><span class="p">.</span><span class="n">sqlFileName</span> <span class="o">=</span> <span class="s">&quot;database&quot;</span>
+
+<span class="n">KarthVader</span><span class="p">.</span><span class="n">setConfiguration</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Note:</strong> You dont need to include file extension.</p>
+
+<h2>KarthVader</h2>
+
+<p>KarthVader is a singleton object, it creates and maintain your managed object contexts. It follows Core Data Stack hierarchy.</p>
+
+<p><img src="https://github.com/karthikkeyan/KarthVader/blob/master/Arch.jpg" alt="Context Hierarchy" ></p>
+
+<h2>Write</h2>
+
+<p>Let see how we usually create an core data object,</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">context</span> <span class="o">=</span> <span class="n">newWriteContext</span><span class="p">()</span>
+<span class="k">let</span> <span class="n">user</span> <span class="o">=</span> <span class="bp">NSEntityDescription</span><span class="p">.</span><span class="n">insertNewObjectForEntityForName</span><span class="p">(</span><span class="s">&quot;User&quot;</span><span class="p">,</span> <span class="nl">inManagedObjectContext</span><span class="p">:</span> <span class="n">context</span><span class="p">)</span> <span class="kt">as</span><span class="o">?</span> <span class="n">User</span>
+<span class="k">if</span> <span class="k">let</span> <span class="n">unwrappedUser</span> <span class="o">=</span> <span class="n">user</span> <span class="p">{</span>
+    <span class="c1">// Set values to your attributes</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Its annoying, isn&#39;t it. Just to create a simple object do we have to write this much code. The worse thing is it not type save, it returns NSManagedObject. We have to type case the object return by this method again.</p>
+
+<p>We have simplifed this process in more natural way,</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">writeContext</span> <span class="o">=</span> <span class="n">KarthVader</span><span class="p">.</span><span class="n">writeContext</span><span class="p">()</span>
+
+<span class="k">let</span> <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="nl">context</span><span class="p">:</span> <span class="n">writeContext</span><span class="p">)</span>
+</code></pre></div>
+<p>All you have to do is to make <strong>KarthVaderObject</strong>, which is a subclass of NSManagedObject, as the superclass of your core data model. The changes you made in the <strong>writeContext</strong> remain unsaved untill you call <strong>commit</strong> method.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Example write</span>
+<span class="k">let</span> <span class="n">writeContext</span> <span class="o">=</span> <span class="n">KarthVader</span><span class="p">.</span><span class="n">writeContext</span><span class="p">()</span>
+
+<span class="k">let</span> <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="nl">context</span><span class="p">:</span> <span class="n">writeContext</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Karthik Keyan&quot;</span>
+<span class="n">user</span><span class="p">.</span><span class="n">email</span> <span class="o">=</span> <span class="s">&quot;karthikkeyan.balan@gmail.com&quot;</span>
+
+<span class="n">writeContext</span><span class="p">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+<p><strong>Note:</strong> KarthVader.writeContext() will create a new context in private queue with KarthVader.manager().mainContext as its parent context.</p>
+
+<p>You can send a completion closer in <strong>commit</strong> method,</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">writeContext</span><span class="p">.</span><span class="n">commit</span> <span class="p">{</span> <span class="cm">/* Update UI */</span> <span class="p">}</span>
+</code></pre></div>
+<p>Method <strong>commit()</strong> save recursively throught all its parent context till the persistent store, asynchronously by default. If you want to commit synchronously, send <strong>wait: true</strong> in commit method.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">writeContext</span><span class="p">.</span><span class="n">commit</span><span class="p">(</span><span class="nl">wait</span><span class="p">:</span> <span class="nb">true</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* Update UI */</span> <span class="p">}</span>
+</code></pre></div>
+<p><strong>Note:</strong> completion closer wont get called in main thread if the commit operation is asynchronous.</p>
+
+<h2>Read</h2>
+
+<p>Fetch operation is simplified compared to traditional way, and here it is,</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">objects</span><span class="p">(</span><span class="n">User</span><span class="p">.</span><span class="nb">self</span><span class="p">)</span>
+</code></pre></div>
+<p>Simple isnt it?. Also you can apply predication, Sorting, limit &amp; offset as well</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Predication</span>
+<span class="k">let</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">objects</span><span class="p">(</span><span class="n">User</span><span class="p">.</span><span class="nb">self</span><span class="p">,</span> <span class="nl">filter</span><span class="p">:</span> <span class="s">&quot;age &gt; 26&quot;</span><span class="p">)</span>
+
+<span class="c1">// Sorting</span>
+<span class="k">let</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">objects</span><span class="p">(</span><span class="n">User</span><span class="p">.</span><span class="nb">self</span><span class="p">,</span> <span class="nl">filter</span><span class="p">:</span> <span class="s">&quot;age &gt; 26&quot;</span><span class="p">,</span> <span class="nl">sort</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;age&quot;</span> <span class="o">:</span> <span class="nb">true</span><span class="p">])</span>
+
+<span class="c1">// Fetch Limit and Offset</span>
+<span class="k">let</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">objects</span><span class="p">(</span><span class="n">User</span><span class="p">.</span><span class="nb">self</span><span class="p">,</span> <span class="nl">filter</span><span class="p">:</span> <span class="nb">nil</span><span class="p">,</span> <span class="nl">sort</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;age&quot;</span> <span class="o">:</span> <span class="nb">true</span><span class="p">],</span> <span class="nl">chunk</span><span class="p">:</span> <span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+</code></pre></div>
+<p><strong>entity:</strong> Object type you want to fetch
+<strong>filter:</strong> filter string used as NSPredicate.
+<strong>sort:</strong> Key-Bool dictionary, where Bool value represents ascending order. In above example result object will be sorted in ascending order based on there user&#39;s age.
+<strong>chunk:</strong> Range objects you want to fetch.</p>
+
+<h2>JSON</h2>
+
+<p>One of the common functionality in any app is, the use of REST APIs, parsing JSON response into object model along with your submodels. KarthVader takes the burden of converting your JSON into core data models.</p>
+
+<p><strong>Example JSON</strong></p>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+<span class="nt">&quot;user&quot;</span><span class="p">:</span>
+    <span class="p">[</span>
+         <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Karthik&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">26</span><span class="p">,</span>
+            <span class="nt">&quot;userID&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;male&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;following&quot;</span><span class="p">:</span>
+            <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;userID&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Vivek&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+         <span class="p">},</span>
+         <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Ram&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">26</span><span class="p">,</span>
+            <span class="nt">&quot;userID&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;male&quot;</span>
+         <span class="p">},</span>
+         <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Darshan&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">28</span><span class="p">,</span>
+            <span class="nt">&quot;userID&quot;</span><span class="p">:</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;male&quot;</span>
+         <span class="p">}</span>
+     <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>User Model</strong></p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="nl">User</span><span class="p">:</span> <span class="n">KarthVaderObject</span> <span class="p">{</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">age</span><span class="p">:</span> <span class="bp">NSNumber</span><span class="o">?</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">name</span><span class="p">:</span> <span class="n">String</span><span class="o">?</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">gender</span><span class="p">:</span> <span class="n">String</span><span class="o">?</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">userID</span><span class="p">:</span> <span class="n">String</span><span class="o">?</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">following</span><span class="p">:</span> <span class="bp">NSSet</span><span class="o">?</span>
+
+
+    <span class="kr">override</span> <span class="k">class</span> <span class="k">func</span> <span class="n">classForKey</span><span class="p">(</span><span class="nl">key</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KarthVaderObject</span><span class="p">.</span><span class="kt">Type</span><span class="o">?</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&quot;following&quot;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">FollowingUser</span><span class="p">.</span><span class="nb">self</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nb">nil</span>
+    <span class="p">}</span>
+
+    <span class="kr">override</span> <span class="k">class</span> <span class="k">func</span> <span class="n">keyForJSONKey</span><span class="p">(</span><span class="nl">key</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&quot;sex&quot;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="s">&quot;gender&quot;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nb">nil</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Following User Model</strong></p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="nl">FollowingUser</span><span class="p">:</span> <span class="n">KarthVaderObject</span> <span class="p">{</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">name</span><span class="p">:</span> <span class="n">String</span><span class="o">?</span>
+
+    <span class="p">@</span><span class="n">NSManaged</span> <span class="k">var</span> <span class="nl">userID</span><span class="p">:</span> <span class="n">String</span><span class="o">?</span>
+
+<span class="p">}</span>
+</code></pre></div>
+<p>And this is how you parse,</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">userJSON</span> <span class="o">=</span> <span class="n">getUsersList</span><span class="p">()</span>
+
+<span class="k">let</span> <span class="n">context</span> <span class="o">=</span> <span class="n">KarthVader</span><span class="p">.</span><span class="n">writeContext</span><span class="p">()</span>
+<span class="n">context</span><span class="p">.</span><span class="n">parse</span><span class="p">(</span><span class="n">userJSON</span><span class="p">,</span> <span class="nl">type</span><span class="p">:</span> <span class="n">User</span><span class="p">.</span><span class="nb">self</span><span class="p">)</span>
+<span class="n">context</span><span class="p">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+<p>Thas it.</p>
+
+<p><strong>Sub Model</strong></p>
+
+<p>In the above example user JSON dictionary have a sub array with a key <strong>following</strong>. It is your&#39;s responsible to provide the parse appropriate class type. For the parent dictionaries you have already provide class type, but for the sub-arrays or sub-dictionaries the parser needs to know what type of object(s) is about to be parsed, before is begins iteration.</p>
+
+<p>If you notice User Object, it is overriding a method called <strong>classForKey:</strong>. If your JSON dictionary have a possibility of having a sub-arrays or sub-dictionarys, you should override this method in your model and provide appropriate class type. Otherwise the value this key will be simply ignored.</p>
+
+<p><strong>Key Mapping</strong></p>
+
+<p>It is a very common problem that, the keys in REST API response wont match exactly with your model&#39;s property. See the above JSON, it contains a key <strong>sex</strong>, but in the <strong>User</strong> model we don&#39;t have that property named <strong>sex</strong>, instead we have a property called <strong>gender</strong>. To address this type of issue, just override <strong>keyForJSONKey:</strong> method in your model class and return the appropriate property name. In the above User model we are mapping the JSON key <strong>sex</strong> to <strong>gender</strong> property.</p>
+
+<p>So when the parser coundnt set a value for a key, it gives the model a chance to map a different property of the that key. If your send nil or if you didnt override this method, then the parser will simply ignore it.</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/karthikkeyanb">
+		<img class=avatar src="http://www.gravatar.com/avatar/31b4f6b901db1a5da649e99869c22932?s=40">
+        <div>
+            <span class="dark">Karthik Keyan Balan</span>
+            <span>Author</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2015/12/11/karthvader-core-data-wrapper-component/ - KarthVader - Core Data Wrapper in Swift by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
+</footer>
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2015/12/11/karthvader-core-data-wrapper-component/">KarthVader - Core Data Wrapper in Swift<aside class="dates">Dec 11</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+

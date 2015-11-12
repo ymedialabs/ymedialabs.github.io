@@ -7,6 +7,18 @@
     <atom:link href="http://ymedialabs.github.io/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>KarthVader - Core Data Wrapper in Swift</title>
+        
+        
+          <description>&lt;h2&gt;Overview&lt;/h2&gt;
+</description>
+        
+        <pubDate>Fri, 11 Dec 2015 13:50:28 +0530</pubDate>
+        <link>http://ymedialabs.github.io/blog/2015/12/11/karthvader-core-data-wrapper-component/</link>
+        <guid isPermaLink="true">http://ymedialabs.github.io/blog/2015/12/11/karthvader-core-data-wrapper-component/</guid>
+      </item>
+    
+      <item>
         <title>Communication between Apple Watch with new WatchOS-2 and iPhone</title>
         
         
