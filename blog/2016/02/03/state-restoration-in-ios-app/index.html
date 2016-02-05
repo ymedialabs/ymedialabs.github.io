@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Y Media Labs Engineering Blog - State Restoration in iOS App</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href="/"> <span class="arrow">←</span> Home </a>
+    
+
+    
+        
+    
+    <a class="cta" href="/feed.xml">Subscribe</a>
+</nav>
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>State Restoration in iOS App</h1>
+        <h2 class="headline">February 3, 2016</h2>
+    </header>
+    <section id="post-body">
+        <p>A user is more likely to take a break from your app in the middle of its usage. And, at some point, the operating system may discard your app from memory; this leads to fresh launch when user returns. Meh, user is unhappy for loosing his work flow!  <a href="https://developer.apple.com/library/ios/featuredarticles/ViewControllerPGforiPhoneOS/PreservingandRestoringState.html">State Restoration</a> is your knight in shining armor. It enhances the user experience by preserving configuration of your app before it is suspended so that the configuration can be restored on a subsequent launch.</p>
+
+<p><img src="/assets/images/posts/2016-02-03/bad_bill.jpg" alt="Context Hierarchy" ></p>
+
+<p>Assume you have navigated through interesting choices on a shopping app and decided to continue checking out choices later tonight, or constructed an important message/tweet/note, or filled out a form partially and pushed the app to background to do it later; certainly, you wouldn’t be happy to start over again when you are back. These are some examples of use cases for State Restoration feature. So, you think this user experience could play significant presence in enterprise/utility apps? You bet!</p>
+
+<p>Alright, let’s go ahead to implementation. The steps to implement are follows:  </p>
+
+<h5>Step (1):</h5>
+
+<p>Enable state restoration by returning <code>true</code> to following application delegate methods. Mission is ON!</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">func</span> <span class="n">application</span><span class="p">(</span><span class="nl">application</span><span class="p">:</span> <span class="bp">UIApplication</span><span class="p">,</span> <span class="n">shouldSaveApplicationState</span> <span class="nl">coder</span><span class="p">:</span> <span class="bp">NSCoder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bool</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nb">true</span>
+  <span class="p">}</span>
+<span class="k">func</span> <span class="n">application</span><span class="p">(</span><span class="nl">application</span><span class="p">:</span> <span class="bp">UIApplication</span><span class="p">,</span> <span class="n">shouldRestoreApplicationState</span> <span class="nl">coder</span><span class="p">:</span> <span class="bp">NSCoder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bool</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="nb">true</span>
+  <span class="p">}</span>
+</code></pre></div>
+<h5>Step (2):</h5>
+
+<p>Each View Controller has a property called <code>restorationIdentifier</code> (default: nil), assign a unique string value to it. This will tell which controllers and views should be preserved and restored.
+There are two ways of doing it. You could set this in storyboard under the tab &#39;Identity Inspector&#39; or you could do it in <code>viewDidLoad()</code> right after calling <code>super</code>.</p>
+
+<p><strong>Tip</strong>: View controllers already have a &#39;&#39;<em>Storyboard ID</em>&#39;&#39; and you could simply use the same string.  </p>
+
+<p><strong>Restoration Paths</strong>: How does system remembers path of navigation, you ask? Restoration identifiers are used to form a unique path to each view controller. For example, to reach &#39;ProfileViewController&#39;, restoration identifiers are used as &quot;<code>RootViewController/NavigationController/ProfileViewController</code>”.</p>
+
+<h5>Programmatically Created View Controllers:</h5>
+
+<p>If you have chosen programatic way to create View Controller instead of storyboard/Xib, there isn’t much different here. You will have to do the same changes in <code>viewDidLoad()</code> instead.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kr">override</span> <span class="k">func</span> <span class="nf">viewDidLoad</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLoad</span><span class="p">()</span>
+
+  <span class="c1">// Tells unique restoration Identifier</span>
+  <span class="n">restorationIdentifier</span> <span class="o">=</span> <span class="s">&quot;ProfileViewController&quot;</span>
+
+  <span class="c1">// Tells UIKit which class to instantiate for restoration</span>
+  <span class="n">restorationClass</span> <span class="o">=</span> <span class="n">PetEditViewController</span><span class="p">.</span><span class="nb">self</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Now, the restoration view controller class must conform to protocol <code>UIViewControllerRestoration</code> system and return an instance of same view controller using the required method. Implementation goes like:</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">extension</span> <span class="nl">ProfileViewController</span><span class="p">:</span> <span class="bp">UIViewControllerRestoration</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="k">func</span> <span class="n">viewControllerWithRestorationIdentifierPath</span><span class="p">(</span><span class="nl">identifierComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">AnyObject</span><span class="p">],</span>
+  <span class="nl">coder</span><span class="p">:</span> <span class="bp">NSCoder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">UIViewController</span><span class="o">?</span> <span class="p">{</span>
+  <span class="k">let</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">ProfileViewController</span><span class="p">()</span>
+  <span class="k">return</span> <span class="n">vc</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you build and run at this point, you wouldn’t find the data you are looking for. Continue to step 3.</p>
+
+<h5>Step (3):</h5>
+
+<p>Store (encode) and Retrieve (decode) any configuration data necessary to reconstruct view controller to its original state. You do this by implementing <code>UIStateRestoring</code> protocol.</p>
+
+<p>In view controller, add following code to override <code>encodeRestorableStateWithCoder(_:)</code> and <code>decodeRestorableStateWithCoder(_:)</code></p>
+
+<p><strong>Encode</strong>:</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kr">override</span> <span class="k">func</span> <span class="nf">encodeRestorableStateWithCoder</span><span class="p">(</span><span class="nl">coder</span><span class="p">:</span> <span class="bp">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="c1">// preserve only ID of Profile Model Object.</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="n">profileID</span> <span class="o">=</span> <span class="n">profileID</span> <span class="p">{</span>
+      <span class="n">coder</span><span class="p">.</span><span class="n">encodeInteger</span><span class="p">(</span><span class="n">profileID</span><span class="p">,</span> <span class="nl">forKey</span><span class="p">:</span> <span class="s">&quot;profileID&quot;</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="c1">// save image</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="n">image</span> <span class="o">=</span> <span class="n">profileImageView</span><span class="p">.</span><span class="n">image</span> <span class="p">{</span>
+      <span class="n">coder</span><span class="p">.</span><span class="n">encodeObject</span><span class="p">(</span><span class="n">UIImagePNGRepresentation</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="nl">forKey</span><span class="p">:</span> <span class="s">&quot;image&quot;</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="c1">//save string</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameTextField</span><span class="p">.</span><span class="n">text</span> <span class="p">{</span>
+    <span class="n">coder</span><span class="p">.</span><span class="n">encodeObject</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nl">forKey</span><span class="p">:</span> <span class="s">&quot;name&quot;</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="nb">super</span><span class="p">.</span><span class="n">encodeRestorableStateWithCoder</span><span class="p">(</span><span class="n">coder</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Decode</strong>:</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kr">override</span> <span class="k">func</span> <span class="nf">decodeRestorableStateWithCoder</span><span class="p">(</span><span class="nl">coder</span><span class="p">:</span> <span class="bp">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="c1">// retrieve profile ID so that we can fetch entire profile</span>
+  <span class="n">profileID</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="n">coder</span><span class="p">.</span><span class="n">decodeIntegerForKey</span><span class="p">(</span><span class="s">&quot;profileID&quot;</span><span class="p">))</span>
+
+  <span class="c1">//image data</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="n">imageData</span> <span class="o">=</span> <span class="n">coder</span><span class="p">.</span><span class="n">decodeObjectForKey</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span> <span class="kt">as</span><span class="o">?</span> <span class="bp">NSData</span> <span class="p">{</span>
+    <span class="n">profileImageView</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="bp">UIImage</span><span class="p">(</span><span class="nl">data</span><span class="p">:</span> <span class="n">imageData</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="c1">// name</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="n">name</span> <span class="o">=</span> <span class="n">coder</span><span class="p">.</span><span class="n">decodeObjectForKey</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">)</span> <span class="kt">as</span><span class="o">?</span> <span class="n">String</span> <span class="p">{</span>
+    <span class="n">nameTextField</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="p">}</span>
+
+  <span class="nb">super</span><span class="p">.</span><span class="n">decodeRestorableStateWithCoder</span><span class="p">(</span><span class="n">coder</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Get Profile</strong>:<br>
+The <code>UIStateRestoring</code> protocol provides, <code>applicationFinishedRestoringState()</code> for additional configurations after decoding stored object(s).</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kr">override</span> <span class="k">func</span> <span class="nf">applicationFinishedRestoringState</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// ask data manager for Profile</span>
+  <span class="n">guard</span> <span class="k">let</span> <span class="n">profileID</span> <span class="o">=</span> <span class="n">profileID</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+  <span class="n">myProfile</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">.</span><span class="n">sharedManager</span><span class="p">.</span><span class="n">profileWithID</span><span class="p">(</span><span class="n">profileID</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>That’s it, Amigos!<br>
+Here is the sample code from Apple on state restoration - <a href="https://developer.apple.com/library/ios/samplecode/StateRestore/Introduction/Intro.html#//apple_ref/doc/uid/DTS40013190-Intro-DontLinkElementID_2">Download here</a>.</p>
+
+<p><strong>Note</strong>: State restoration doesn’t works when app is killed via app switcher. Also when state restoration fails with some error, off course.</p>
+
+<p>Now, send out a message - &quot;This is you. You have an iOS App. You support State Restoration. You Rock!&quot;</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/ajithrnayak">
+		<img class=avatar src="http://www.gravatar.com/avatar/4c21eb76541194ebc8eaa6852d5c2da4?s=40">
+        <div>
+            <span class="dark">Abhijit Nayak</span>
+            <span>Author</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        <a class="twitter" href="https://twitter.com/intent/tweet?text=http://ymedialabs.github.com/blog/2016/02/03/state-restoration-in-ios-app/ - State Restoration in iOS App by @ymedialabs"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+    </section>
+</footer>
+
+<!-- Disqus comments -->
+
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/blog/2016/02/03/state-restoration-in-ios-app/">State Restoration in iOS App<aside class="dates">Feb 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/11/11/karthvader-core-data-wrapper-component/">KarthVader - Core Data Wrapper in Swift<aside class="dates">Nov 11</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/11/07/uilayoutguide-autolayout-helper-view/">UILayoutGuide: Auto Layout Helper View<aside class="dates">Nov 07</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/07/03/communication-in-apple-watchos-2/">Communication between Apple Watch with new WatchOS-2 and iPhone<aside class="dates">Jul 03</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/30/apple-watch-connectivity/">How do we communicate between Watch and iPhone App ?<aside class="dates">Jun 30</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/06/19/symbolicating-crashes-now-made-easy/">Symbolicating crashes now made easy<aside class="dates">Jun 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/25/possible-abuse-of-dispatch-after/">Possible abuse of dispatch_after<aside class="dates">May 25</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/14/shaping-up-with-cashapelayer/">Shaping up with CAShapeLayer<aside class="dates">May 14</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/12/draw-a-bezier-curve-through-a-set-of-2d-points-in-ios/">Draw a Bezier Curve through a set of 2D Points in iOS<aside class="dates">May 12</aside></a>
+            </li>
+        
+            <li>
+                <a href="/blog/2015/05/11/lets-roll/">Lets Roll!<aside class="dates">May 11</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+
